@@ -1,251 +1,231 @@
-# 🎯 Tarefix - Sistema de Gerenciamento de Tarefas
+# 🎯 Tarefix - Task Manager Moderno
 
-**Versão 2.0** - Agora com autenticação Clerk integrada!
+> **Sistema completo de gerenciamento de tarefas com autenticação avançada e interface moderna**
 
-Sistema moderno e completo para gerenciar tarefas e projetos com máxima eficiência e segurança.
+<div align="center">
 
-## ✨ Funcionalidades Principais
+![Next.js](https://img.shields.io/badge/Next.js-15.4.4-black?style=for-the-badge&logo=next.js)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)
+![Clerk](https://img.shields.io/badge/Clerk-Auth-purple?style=for-the-badge&logo=clerk)
+![Prisma](https://img.shields.io/badge/Prisma-ORM-2D3748?style=for-the-badge&logo=prisma)
+![Tailwind](https://img.shields.io/badge/Tailwind-CSS-38B2AC?style=for-the-badge&logo=tailwind-css)
 
-### 🔐 Autenticação & Segurança
-- **Clerk Authentication** - Sistema de autenticação profissional
-- Verificação automática de email
-- Autenticação multi-fator (MFA)
-- Login social (Google, GitHub, etc.)
-- Proteção contra ataques e rate limiting
-- Sessões seguras e persistentes
+**🚀 Aplicação em desenvolvimento - Primeiro commit funcional**
 
-### 📋 Gerenciamento de Tarefas
-- Criação, edição e exclusão de tarefas
-- Sistema de prioridades (Alta, Média, Baixa)
-- Status personalizáveis (Pendente, Em Progresso, Concluída)
-- Datas de vencimento e lembretes
-- Categorização e filtros avançados
+</div>
 
-### 🎨 Interface & UX
-- **Design System Minimalista Profissional**
-- Interface responsiva e moderna
-- Componentes UI reutilizáveis
-- Tema consistente e acessível
-- Experiência otimizada para mobile
+---
 
-## 🚀 Tecnologias
+## 📋 **Sobre o Projeto**
 
-### Frontend
-- **Next.js 15** (App Router)
-- **React 18** com TypeScript
-- **Tailwind CSS** para estilização
-- **Clerk** para autenticação
+**Tarefix** é um sistema moderno de gerenciamento de tarefas desenvolvido com **Next.js 15** e **TypeScript**. O projeto combina as melhores tecnologias atuais para oferecer uma experiência completa de produtividade.
 
-### Backend
-- **Next.js API Routes**
-- **Prisma ORM** com PostgreSQL
-- **Webhooks** para sincronização automática
-- Validação com **Zod**
+### 🎯 **Objetivo**
+Criar uma aplicação robusta, segura e escalável para gerenciamento de tarefas pessoais e profissionais, com foco em:
+- **Performance** - Carregamento ultra-rápido
+- **Segurança** - Autenticação enterprise-grade
+- **UX/UI** - Interface moderna e intuitiva
+- **Escalabilidade** - Arquitetura preparada para crescimento
 
-### Infraestrutura
-- **Neon Database** (PostgreSQL)
-- **Vercel** para deploy
-- **Clerk Dashboard** para gerenciamento de usuários
+---
 
-## 📦 Instalação e Configuração
+## ✨ **Funcionalidades Implementadas**
 
-### 1. Clonar o Repositório
+### 🔐 **Autenticação & Segurança**
+- ✅ **Clerk Authentication** - Sistema profissional de autenticação
+- ✅ **Middleware de proteção** - Rotas privadas protegidas
+- ✅ **Gerenciamento de sessões** - Login persistente e seguro
+- ✅ **Webhooks** - Sincronização automática de usuários
+
+### 📱 **Interface & Experiência**
+- ✅ **Design responsivo** - Funciona perfeitamente em mobile e desktop
+- ✅ **Tailwind CSS** - Estilização moderna e consistente
+- ✅ **Componentes reutilizáveis** - Sistema de design estruturado
+- ✅ **Loading states** - Feedback visual em todas as ações
+
+### � **Gerenciamento de Tarefas**
+- ✅ **CRUD completo** - Criar, listar, editar e deletar tarefas
+- ✅ **API RESTful** - Endpoints organizados e documentados
+- ✅ **Validação robusta** - Zod para validação de dados
+- ✅ **Estados de tarefa** - Sistema de status e prioridades
+
+### 🗄️ **Banco de Dados & Backend**
+- ✅ **Prisma ORM** - Modelagem type-safe do banco
+- ✅ **PostgreSQL** - Banco robusto e escalável (Neon)
+- ✅ **Migrações** - Controle de versão do schema
+- ✅ **Relações** - Usuários e tarefas conectados
+
+---
+
+## �️ **Stack Tecnológica**
+
+### **Frontend**
+```
+⚡ Next.js 15        - Framework React com App Router
+🔷 TypeScript       - Tipagem estática para maior segurança
+🎨 Tailwind CSS     - Framework CSS utility-first
+⚛️ React 19         - Biblioteca de interface moderna
+```
+
+### **Backend**
+```
+🚀 Next.js API     - API Routes serverless
+🔗 Prisma ORM      - Type-safe database client
+🐘 PostgreSQL      - Banco de dados relacional
+✅ Zod             - Schema validation
+```
+
+### **Autenticação**
+```
+🔐 Clerk           - Authentication-as-a-Service
+🛡️ Middleware      - Proteção de rotas
+📡 Webhooks        - Sincronização de dados
+```
+
+### **Infraestrutura**
+```
+🌐 Neon Database   - PostgreSQL serverless
+🚀 Vercel Ready    - Deploy otimizado
+📦 npm/Node.js     - Gerenciamento de dependências
+```
+
+---
+
+## 🎨 **Screenshots & Demo**
+
+### 🏠 **Página Inicial**
+- Design moderno com gradientes
+- Call-to-action claro
+- Navegação intuitiva
+
+### 🔐 **Autenticação**
+- Login/Registro via Clerk
+- Interface profissional
+- Redirects automáticos
+
+### 📊 **Dashboard**
+- Visão geral das tarefas
+- Estatísticas em tempo real
+- Interface responsiva
+
+---
+
+## 🚀 **Instalação e Execução**
+
+### **Pré-requisitos**
+- Node.js 18+
+- npm ou yarn
+- Conta no Clerk
+- Banco PostgreSQL (Neon recomendado)
+
+### **1. Clone e instale**
 ```bash
-git clone https://github.com/seu-usuario/tarefix.git
+git clone https://github.com/SEU_USUARIO/tarefix.git
 cd tarefix
 npm install
 ```
 
-### 2. Configurar Variáveis de Ambiente
-Crie um arquivo `.env` na raiz do projeto:
-
-```env
-# Database
-DATABASE_URL="sua-url-do-postgresql"
-
-# Clerk Authentication
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_test_your-publishable-key"
-CLERK_SECRET_KEY="sk_test_your-secret-key"
-WEBHOOK_SECRET="whsec_your-webhook-secret"
-
-# Clerk URLs
-NEXT_PUBLIC_CLERK_SIGN_IN_URL="/auth/sign-in"
-NEXT_PUBLIC_CLERK_SIGN_UP_URL="/auth/sign-up"
-NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL="/dashboard"
-NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL="/dashboard"
-
-# App
-NEXT_PUBLIC_APP_URL="http://localhost:3000"
-```
-
-### 3. Configurar Clerk
-1. Crie uma conta em [Clerk.dev](https://clerk.dev)
-2. Crie uma nova aplicação
-3. Copie as chaves para o arquivo `.env`
-4. Configure o webhook para sincronização de usuários:
-   - URL: `https://seu-dominio.com/api/webhooks/clerk`
-   - Eventos: `user.created`, `user.updated`, `user.deleted`
-
-### 4. Configurar Banco de Dados
+### **2. Configure as variáveis de ambiente**
 ```bash
-# Aplicar migrações
-npx prisma migrate dev
-
-# (Opcional) Visualizar dados
-npx prisma studio
+cp .env.example .env
+# Edite o arquivo .env com suas credenciais
 ```
 
-### 5. Executar em Desenvolvimento
+### **3. Configure o banco de dados**
+```bash
+npx prisma generate
+npx prisma db push
+```
+
+### **4. Execute em desenvolvimento**
 ```bash
 npm run dev
-# Acesse: http://localhost:3000
+# Aplicação rodando em http://localhost:3000
 ```
-
-## 🗂️ Estrutura do Projeto
-
-```
-src/
-├── app/                    # Next.js App Router
-│   ├── auth/              # Páginas de autenticação
-│   │   ├── sign-in/       # Login (Clerk)
-│   │   └── sign-up/       # Registro (Clerk)
-│   ├── dashboard/         # Dashboard do usuário
-│   ├── api/               # API Routes
-│   │   ├── tasks/         # CRUD de tarefas
-│   │   └── webhooks/      # Webhooks do Clerk
-│   ├── globals.css        # Estilos globais
-│   ├── layout.tsx         # Layout raiz com ClerkProvider
-│   └── page.tsx           # Página inicial
-├── components/            # Componentes React
-│   └── ui/                # Design System
-│       ├── Button.tsx     # Componente de botão
-│       ├── Input.tsx      # Componente de input
-│       ├── Card.tsx       # Componente de card
-│       └── ...            # Outros componentes
-├── lib/                   # Utilitários
-│   └── prisma.ts          # Cliente do Prisma
-└── hooks/                 # Custom Hooks
-    └── useTasks.tsx       # Hook para gerenciar tarefas
-```
-
-## 🎨 Design System
-
-### Cores Principais
-- **Primary**: `#1f2937` (Gray 800)
-- **Secondary**: `#374151` (Gray 700)
-- **Success**: `#10b981` (Emerald 500)
-- **Warning**: `#f59e0b` (Amber 500)
-- **Error**: `#ef4444` (Red 500)
-
-### Componentes UI
-- ✅ **Button** (5 variantes + 3 tamanhos)
-- ✅ **Input** (com validação e estados)
-- ✅ **Card** (container flexível)
-- ✅ **Alert** (4 tipos de notificação)
-- ✅ **Badge** (indicadores de status)
-- ✅ **LoadingSpinner** (estados de carregamento)
-
-### Tipografia
-- **Fonte**: Inter (system fonts fallback)
-- **Escalas**: text-sm, text-base, text-lg, text-xl, text-2xl, text-3xl
-
-## 🔄 Fluxo de Autenticação
-
-1. **Registro/Login**: Usuário se autentica via Clerk
-2. **Webhook**: Clerk envia dados do usuário para nossa API
-3. **Sincronização**: API cria/atualiza usuário no banco local
-4. **Autorização**: Middleware protege rotas privadas
-5. **Dashboard**: Usuário acessa área logada
-
-## 📊 Schema do Banco de Dados
-
-```prisma
-model User {
-  id        String   @id @default(cuid())
-  clerkId   String   @unique        // ID do usuário no Clerk
-  email     String   @unique
-  name      String
-  imageUrl  String?                // URL do avatar
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  tasks     Task[]                 // Relacionamento com tarefas
-}
-
-model Task {
-  id          String     @id @default(cuid())
-  title       String
-  description String?
-  priority    Priority   @default(MEDIUM)
-  status      Status     @default(PENDING)
-  dueDate     DateTime?
-  userId      String                // FK para User
-  user        User       @relation(fields: [userId], references: [id])
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-}
-```
-
-## 🚀 Deploy
-
-### Vercel (Recomendado)
-1. Conecte seu repositório ao Vercel
-2. Configure as variáveis de ambiente
-3. Atualize a URL do webhook no Clerk
-4. Deploy automático a cada push
-
-### Outras Plataformas
-- **Netlify**: Suporte completo para Next.js
-- **Railway**: Deploy rápido com banco integrado
-- **Heroku**: Configure buildpacks para Next.js
-
-## 🔮 Roadmap
-
-### v2.1 - Melhorias de UX
-- [ ] Dark mode toggle
-- [ ] Notificações push
-- [ ] Filtros avançados de tarefas
-- [ ] Exportação de dados
-
-### v2.2 - Colaboração
-- [ ] Compartilhamento de tarefas
-- [ ] Equipes e workspaces
-- [ ] Comentários em tarefas
-- [ ] Histórico de atividades
-
-### v2.3 - Integrações
-- [ ] API pública
-- [ ] Integração com calendários
-- [ ] Webhooks personalizados
-- [ ] Import/Export (JSON, CSV)
-
-### v3.0 - AI & Analytics
-- [ ] Sugestões inteligentes
-- [ ] Análise de produtividade
-- [ ] Relatórios automatizados
-- [ ] Integração com IA
-
-## 🤝 Contribuições
-
-Contribuições são bem-vindas! Por favor:
-
-1. Fork o projeto
-2. Crie uma branch para sua feature
-3. Commit suas mudanças
-4. Push para a branch
-5. Abra um Pull Request
-
-## 📄 Licença
-
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
-
-## 📞 Contato
-
-**Eduardo** - [GitHub](https://github.com/seu-usuario)
 
 ---
 
+## � **Estrutura do Projeto**
+
+```
+📦 tarefix/
+├── 📂 src/
+│   ├── 📂 app/                   # Next.js App Router
+│   │   ├── 📂 dashboard/         # Dashboard do usuário
+│   │   ├── 📂 sign-in/          # Página de login
+│   │   ├── 📂 sign-up/          # Página de registro
+│   │   ├── 📂 api/              # API Routes
+│   │   │   ├── 📂 tasks/        # CRUD de tarefas
+│   │   │   └── 📂 webhooks/     # Integração Clerk
+│   │   ├── 📄 layout.tsx        # Layout com ClerkProvider
+│   │   └── 📄 page.tsx          # Página inicial
+│   ├── 📂 components/           # Componentes React
+│   │   └── 📂 ui/               # Sistema de Design
+│   └── 📂 lib/                  # Utilitários
+├── 📂 prisma/                   # Schema e migrações
+├── 📂 scripts/                  # Scripts de automação
+├── 📂 docs/                     # Documentação
+├── 📄 .env.example             # Template de configuração
+└── 📄 package.json             # Dependências e scripts
+```
+
+---
+
+## 🔐 **Configuração de Segurança**
+
+### **Variáveis de Ambiente**
+O projeto inclui:
+- ✅ `.env.example` - Template seguro
+- ✅ `.gitignore` - Proteção de dados sensíveis
+- ✅ Scripts de verificação - Detecção de vazamentos
+
+### **Scripts de Segurança**
+```bash
+npm run security-check    # Verificar arquivos sensíveis
+npm run pre-push          # Validação antes do push
+```
+
+---
+
+## 🤝 **Contribuição**
+
+### **Como contribuir**
+1. **Fork** o repositório
+2. **Crie** uma branch: `git checkout -b feature/nova-feature`
+3. **Commit** suas mudanças: `git commit -m 'feat: nova feature'`
+4. **Push** para a branch: `git push origin feature/nova-feature`
+5. **Abra** um Pull Request
+
+### **Padrões do projeto**
+- 📝 **Commits**: Conventional Commits
+- 🏗️ **Arquitetura**: Clean Architecture
+- 🧪 **Testes**: Jest + Testing Library
+- 📚 **Docs**: Sempre atualizadas
+
+---
+
+## 📄 **Licença**
+
+Este projeto está sob a licença **MIT**. Veja o arquivo [LICENSE](LICENSE) para detalhes.
+
+---
+
+## 📞 **Contato & Links**
+
 <div align="center">
-  <strong>Feito com ❤️ para organizar suas tarefas!</strong><br>
-  <em>Tarefix v2.0 - Powered by Clerk</em>
+
+**Desenvolvido por Eduardo** 
+
+[![GitHub](https://img.shields.io/badge/GitHub-Profile-black?style=for-the-badge&logo=github)](https://github.com/SEU_USUARIO)
+[![Portfolio](https://img.shields.io/badge/Portfolio-Website-blue?style=for-the-badge&logo=google-chrome)](https://seu-portfolio.com)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue?style=for-the-badge&logo=linkedin)](https://linkedin.com/in/seu-perfil)
+
+---
+
+### 🎯 **Tarefix v1.0** 
+*Transformando a forma como você gerencia suas tarefas*
+
+**⭐ Se gostou do projeto, deixe uma estrela no repositório!**
+
 </div>
 
