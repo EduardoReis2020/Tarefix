@@ -204,24 +204,6 @@ npm run pre-push          # Validação antes do push
 
 ---
 
-## 📄 **Licença**
-
-Este projeto está sob a licença **MIT**. Veja o arquivo [LICENSE](LICENSE) para detalhes.
-
----
-
-## 📞 **Contato & Links**
-
-<div align="center">
-
-**Desenvolvido por Eduardo** 
-
-[![GitHub](https://img.shields.io/badge/GitHub-Profile-black?style=for-the-badge&logo=github)](https://github.com/SEU_USUARIO)
-[![Portfolio](https://img.shields.io/badge/Portfolio-Website-blue?style=for-the-badge&logo=google-chrome)](https://seu-portfolio.com)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue?style=for-the-badge&logo=linkedin)](https://linkedin.com/in/seu-perfil)
-
----
-
 ### 🎯 **Tarefix v1.0** 
 *Transformando a forma como você gerencia suas tarefas*
 
