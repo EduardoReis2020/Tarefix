@@ -1,0 +1,41 @@
+{
+  "name": "tarefix",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "security-check": "powershell -ExecutionPolicy Bypass -File ./scripts/security-check.ps1",
+    "security-check-bash": "bash ./scripts/security-check.sh",
+    "clean-git-history": "powershell -ExecutionPolicy Bypass -File ./scripts/clean-git-history.ps1",
+    "setup-own-repo": "powershell -ExecutionPolicy Bypass -File ./scripts/setup-own-repo.ps1",
+    "pre-push": "npm run security-check",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:studio": "prisma studio"
+  },
+  "dependencies": {
+    "@clerk/nextjs": "^6.29.0",
+    "@prisma/client": "^6.13.0",
+    "next": "15.4.4",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "svix": "^1.71.0",
+    "zod": "^4.0.13"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "15.4.4",
+    "prisma": "^6.13.0",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
