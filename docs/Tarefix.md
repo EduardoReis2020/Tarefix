@@ -9,34 +9,34 @@ Este documento contém **todos os diagramas em Mermaid** prontos para usar no se
 ```mermaid
 flowchart LR
   %% Clientes
-  Browser[Usuário (Browser / Mobile App)]
+  Browser["Usuário Browser/Mobile"]
 
   %% Frontend
   subgraph Frontend
-    NextJS[Next.js (React) - UI / SSR / Client]
+    NextJS["Next.js React UI/SSR"]
   end
 
   Browser -->|HTTPS| NextJS
 
   %% Autenticação
   subgraph Auth
-    NextAuth[NextAuth (API Routes)]
+    NextAuth["NextAuth API Routes"]
   end
-  NextJS -->|Auth Requests / Session| NextAuth
+  NextJS -->|"Auth Requests"| NextAuth
 
   %% Backend / API
   subgraph Backend
-    API[Next.js API / Node.js (Business API)]
-    Socket[Realtime Server (Socket.io) / WebSocket]
+    API["Next.js Business API"]
+    Socket["Realtime Server WebSocket"]
   end
-  NextJS -->|API Calls (REST/GraphQL)| API
+  NextJS -->|"API Calls REST"| API
   NextJS -->|WebSocket| Socket
 
   %% Database & Cache & Storage
   subgraph Infra
-    Postgres[(PostgreSQL - Prisma)]
-    Redis[(Redis - Cache / PubSub / RateLimit)]
-    S3[(Object Storage - S3 / DigitalOcean Spaces)]
+    Postgres[("PostgreSQL Prisma")]
+    Redis[("Redis Cache/PubSub")]
+    S3[("Object Storage S3")]
   end
   API --> Postgres
   Socket --> Postgres
@@ -46,11 +46,11 @@ flowchart LR
 
   %% Serviços terceiros
   subgraph ThirdParty
-    Stripe[Stripe (Pagamentos)]
-    Email[Email Provider (SendGrid / SES)]
-    Storage[CDN (Cloudflare / Cloudfront)]
-    CI[GitHub Actions CI/CD]
-    Monitoring[Sentry / Prometheus]
+    Stripe["Stripe Pagamentos"]
+    Email["Email Provider SendGrid"]
+    Storage["CDN Cloudflare"]
+    CI["GitHub Actions CI/CD"]
+    Monitoring["Sentry/Prometheus"]
   end
   API -->|Payments| Stripe
   API -->|Emails| Email
@@ -61,8 +61,8 @@ flowchart LR
   Socket --> Monitoring
 
   %% Admin panel
-  AdminUI[Admin Dashboard (Next.js - Role: Super Admin)]
-  AdminUI -->|Admin API| API
+  AdminUI["Admin Dashboard NextJS"]
+  AdminUI -->|"Admin API"| API
 
   classDef infra fill:#f9f,stroke:#333,stroke-width:1px;
   class Infra infra
@@ -104,7 +104,7 @@ erDiagram
     uuid id PK
     uuid team_id FK
     uuid user_id FK
-    string role "admin|member|readonly"
+    string role
     timestamp joined_at
   }
 
@@ -114,8 +114,8 @@ erDiagram
     uuid created_by FK
     string title
     text description
-    enum priority "low|medium|high|urgent"
-    enum status "todo|in_progress|done|overdue"
+    enum priority
+    enum status
     timestamp start_date
     timestamp due_date
     timestamp created_at
@@ -170,7 +170,7 @@ erDiagram
     uuid plan_id FK
     timestamp started_at
     timestamp expires_at
-    enum status "active|past_due|canceled"
+    enum status
   }
 
   USERS ||--o{ TEAM_MEMBERS : "is member"
@@ -199,19 +199,19 @@ erDiagram
 
 ```mermaid
 flowchart TD
-  A[Usuário abre app] --> B[Signup / Login]
-  B --> C{Usuário novo?}
-  C -->|Sim| D[Preenche perfil (nome, foto...)]
-  D --> E[Opção: Criar Time ou Entrar via convite]
-  E --> F{Criar Time}
-  F -->|Criar| G[Form: nome do time, descrição, convidar emails]
-  G --> H[Time criado; usuário é Admin do Time]
-  H --> I[Dashboard do Time]
-  E -->|Entrar via convite| J[Insere token/aceita convite]
-  J --> K[Entrou no time como Member/Role conforme convite]
+  A["Usuário abre app"] --> B["Signup/Login"]
+  B --> C{"Usuário novo?"}
+  C -->|Sim| D["Preenche perfil"]
+  D --> E["Opção: Criar Time ou Entrar"]
+  E --> F{"Criar Time"}
+  F -->|Criar| G["Form: dados do time"]
+  G --> H["Time criado - Admin"]
+  H --> I["Dashboard do Time"]
+  E -->|"Entrar via convite"| J["Insere token convite"]
+  J --> K["Entrou no time como Member"]
   K --> I
 
-  C -->|Não| L[Login -> Redirect para Dashboard/Último Time]
+  C -->|Não| L["Login - Redirect Dashboard"]
   L --> I
 ```
 
@@ -221,23 +221,23 @@ flowchart TD
 
 ```mermaid
 sequenceDiagram
-  participant U as Usuário (Front)
-  participant FE as Frontend (Next.js)
+  participant U as Usuario
+  participant FE as Frontend
   participant API as Backend API
   participant DB as PostgreSQL
-  participant S as Socket/Redis
+  participant S as Socket Redis
   participant Email as Email Service
 
-  U->>FE: Preenche form de tarefa (title, desc, due_date, assignees...)
-  FE->>API: POST /teams/:id/tasks {payload}
-  API->>DB: INSERT task, INSERT task_assignments
+  U->>FE: Preenche form de tarefa
+  FE->>API: POST /teams/:id/tasks
+  API->>DB: INSERT task assignments
   DB-->>API: 201 CREATED
-  API->>S: PubSub notify (task_created, notify assignees)
-  S->>FE: emits WebSocket -> assignees recebem notificação em tempo real
-  API->>Email: enqueue email to assignees (async)
+  API->>S: PubSub notify task created
+  S->>FE: emits WebSocket notificacao
+  API->>Email: enqueue email async
   Email-->>API: 202 queued
-  API-->>FE: 201 CREATED + task object
-  FE-->>U: mostra task criada e notificação
+  API-->>FE: 201 CREATED task object
+  FE-->>U: mostra task criada
 ```
 
 **Observações**:
@@ -257,11 +257,11 @@ sequenceDiagram
   participant DB as PostgreSQL
 
   U1->>FE: Envia comentário na tarefa
-  FE->>Socket: emit('task:commented', {taskId, content, authorId})
+  FE->>Socket: emit task commented
   Socket->>DB: INSERT comment
-  DB-->>Socket: OK -> savedComment
-  Socket-->>FE: broadcast('task:commented', savedComment) to room(taskId)
-  FE-->>U2: Recebe comentário em tempo real
+  DB-->>Socket: OK savedComment
+  Socket-->>FE: broadcast task commented
+  FE-->>U1: Recebe comentário em tempo real
 ```
 
 **Dica**: mantenha um evento `room` por `taskId` para broadcast e use TTL para mensagens em cache se desejar.
@@ -272,16 +272,16 @@ sequenceDiagram
 
 ```mermaid
 flowchart LR
-  AdminApp[Super Admin]
-  TeamAdmin[Admin do Time]
-  Member[Member]
-  ReadOnly[Somente Leitura]
+  AdminApp["Super Admin"]
+  TeamAdmin["Admin do Time"]
+  Member["Member"]
+  ReadOnly["Somente Leitura"]
 
-  AdminApp -->|manage platform| All
-  TeamAdmin -->|create/edit/delete tasks| Member
-  TeamAdmin -->|assign tasks| Member
-  Member -->|create/edit own tasks| Member
-  ReadOnly -.->|view only| Member
+  AdminApp -->|"manage platform"| TeamAdmin
+  TeamAdmin -->|"create/edit/delete tasks"| Member
+  TeamAdmin -->|"assign tasks"| Member  
+  Member -->|"create/edit own tasks"| Member
+  ReadOnly -.->|"view only"| Member
 
   classDef role fill:#fff7c0,stroke:#333
   class AdminApp,TeamAdmin,Member,ReadOnly role
@@ -293,13 +293,13 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-  Dev[Dev pushes PR] --> GH[GitHub Actions]
-  GH --> Test[Run tests]
-  Test --> Build[Build artifacts]
-  Build --> DeployFront[Vercel]
-  Build --> DeployAPI[Railway / Render / DigitalOcean]
-  DeployFront -->|CD| ProdFront
-  DeployAPI -->|CD| ProdAPI
+  Dev["Dev pushes PR"] --> GH["GitHub Actions"]
+  GH --> Test["Run tests"]
+  Test --> Build["Build artifacts"]
+  Build --> DeployFront["Vercel"]
+  Build --> DeployAPI["Railway/Render"]
+  DeployFront -->|CD| ProdFront["Production Frontend"]
+  DeployAPI -->|CD| ProdAPI["Production API"]
 ```
 
 ---
