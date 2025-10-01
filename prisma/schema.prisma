@@ -1,54 +1,189 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
-generator client {
-  provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
-}
+// ============================================
+// Tarefix - Prisma Schema
+// Banco: PostgreSQL (Neon)
+// ============================================
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id        String   @id @default(cuid())
-  clerkId   String   @unique
-  email     String   @unique
-  name      String
-  imageUrl  String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  tasks     Task[]
-
-  @@map("users")
+generator client {
+  provider = "prisma-client-js"
 }
 
+// ============================================
+// MODELS PRINCIPAIS
+// ============================================
+
+// Usuários da aplicação
+model User {
+  id          String       @id @default(cuid())
+  name        String
+  email       String       @unique
+  password    String
+  role        GlobalRole   @default(USER) // SuperAdmin controla tudo
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  // Relacionamentos
+  memberships Membership[]
+  tasks       Task[]       @relation("UserTasks")
+  comments    Comment[]
+  invites     Invite[]     @relation("UserInvites")
+
+  // Relação para ActivityLog
+  activityLogs ActivityLog[]
+}
+
+// Roles globais da aplicação (não confundir com roles de time)
+enum GlobalRole {
+  SUPERADMIN
+  USER
+}
+
+// ============================================
+// Times / Organizações
+// ============================================
+model Team {
+  id          String        @id @default(cuid())
+  name        String
+  description String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Relacionamentos
+  memberships Membership[]
+  tasks       Task[]
+  invites     Invite[]
+
+  // Relação para ActivityLog
+  activityLogs ActivityLog[]
+}
+
+// Relacionamento User ↔ Team com permissões
+model Membership {
+  id        String    @id @default(cuid())
+  role      TeamRole  @default(MEMBER)
+  createdAt DateTime  @default(now())
+
+  userId String
+  teamId String
+
+  user User @relation(fields: [userId], references: [id])
+  team Team @relation(fields: [teamId], references: [id])
+}
+
+enum TeamRole {
+  ADMIN     // Pode gerenciar tudo no time
+  MEMBER    // Pode criar/editar tarefas
+  READONLY  // Apenas visualiza
+}
+
+// ============================================
+// Tarefas
+// ============================================
 model Task {
-  id          String     @id @default(uuid())
+  id          String       @id @default(cuid())
   title       String
   description String?
+  priority    TaskPriority @default(MEDIUM)
+  status      TaskStatus   @default(TODO)
+  createdAt   DateTime     @default(now())
+  startDate   DateTime?
   dueDate     DateTime?
-  priority    Priority   @default(MEDIUM)
-  status      Status     @default(PENDING)
-  userId      String
-  user        User       @relation(fields: [userId], references: [id])
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  updatedAt   DateTime     @updatedAt
+
+  // Relacionamentos
+  teamId String
+  team   Team   @relation(fields: [teamId], references: [id])
+
+  assignees User[]   @relation("UserTasks")
+  tags      Tag[]    @relation("TaskTags")
+  comments  Comment[]
 }
 
-enum Priority {
+enum TaskPriority {
   LOW
   MEDIUM
   HIGH
+  CRITICAL
 }
 
-enum Status {
-  PENDING
+enum TaskStatus {
+  TODO
   IN_PROGRESS
   DONE
-  OVERDUE
+  LATE
+}
+
+// Tags de tarefas
+model Tag {
+  id    String @id @default(cuid())
+  name  String @unique
+
+  tasks Task[] @relation("TaskTags")
+}
+
+// ============================================
+// Comentários (chat por tarefa)
+// ============================================
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now())
+
+  userId String
+  taskId String
+
+  user User @relation(fields: [userId], references: [id])
+  task Task @relation(fields: [taskId], references: [id])
+}
+
+// ============================================
+// Convites de times
+// ============================================
+model Invite {
+  id        String   @id @default(cuid())
+  email     String   // Email do convidado
+  status    InviteStatus @default(PENDING)
+  createdAt DateTime @default(now())
+
+  teamId String
+  invitedById String
+
+  team      Team @relation(fields: [teamId], references: [id])
+  invitedBy User @relation("UserInvites", fields: [invitedById], references: [id])
+}
+
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+// ============================================
+// Planos de assinatura (Admin Global)
+// ============================================
+model Plan {
+  id        String   @id @default(cuid())
+  name      String
+  price     Float
+  features  String[] // lista de funcionalidades
+  createdAt DateTime @default(now())
+}
+
+// ============================================
+// Logs de atividades (auditoria)
+// ============================================
+model ActivityLog {
+  id        String   @id @default(cuid())
+  action    String
+  createdAt DateTime @default(now())
+
+  userId String?
+  teamId String?
+
+  user User? @relation(fields: [userId], references: [id])
+  team Team? @relation(fields: [teamId], references: [id])
 }
