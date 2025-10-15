@@ -32,6 +32,9 @@ model User {
   comments    Comment[]
   invites     Invite[]     @relation("UserInvites")
 
+  // Times que o usuário é dono
+  ownedTeams  Team[]
+
   // Relação para ActivityLog
   activityLogs ActivityLog[]
 }
@@ -52,6 +55,9 @@ model Team {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
+  ownerId     String
+  owner       User          @relation(fields: [ownerId], references: [id])
+
   // Relacionamentos
   memberships Membership[]
   tasks       Task[]
@@ -64,14 +70,15 @@ model Team {
 // Relacionamento User ↔ Team com permissões
 model Membership {
   id        String    @id @default(cuid())
+  userId    String
+  teamId    String
   role      TeamRole  @default(MEMBER)
   createdAt DateTime  @default(now())
-
-  userId String
-  teamId String
-
+  updatedAt DateTime @updatedAt
   user User @relation(fields: [userId], references: [id])
   team Team @relation(fields: [teamId], references: [id])
+
+  @@unique([userId, teamId])
 }
 
 enum TeamRole {
