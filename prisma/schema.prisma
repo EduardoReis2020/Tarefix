@@ -37,12 +37,45 @@ model User {
 
   // Relação para ActivityLog
   activityLogs ActivityLog[]
+
+  WorkspaceMembership WorkspaceMembership[]
 }
 
 // Roles globais da aplicação (não confundir com roles de time)
 enum GlobalRole {
   SUPERADMIN
   USER
+}
+
+// ============================================
+// Workspace
+// ============================================
+model Workspace {
+  id          String      @id @default(cuid())
+  name        String
+  description String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Relacionamentos
+  teams       Team[]
+  memberships WorkspaceMembership[]
+}
+
+model WorkspaceMembership {
+  id          String           @id @default(cuid())
+  role        WorkspaceRole    @default(MEMBER)
+  userId      String
+  workspaceId String
+
+  user       User       @relation(fields: [userId], references: [id])
+  workspace  Workspace  @relation(fields: [workspaceId], references: [id])
+}
+
+enum WorkspaceRole {
+  OWNER
+  ADMIN
+  MEMBER
 }
 
 // ============================================
@@ -57,6 +90,9 @@ model Team {
 
   ownerId     String
   owner       User          @relation(fields: [ownerId], references: [id])
+
+  workspaceId String        @default("default-workspace-id")
+  workspace   Workspace     @relation(fields: [workspaceId], references: [id])
 
   // Relacionamentos
   memberships Membership[]
