@@ -17,7 +17,7 @@ const Header = () => {
         setIsModalOpen(false);
     };
 
-    const isAuthPage = ["/", "/(auth)/register", "/(auth)/login", "/register", "/login"].includes(pathname);
+    const isAuthPage = ["/", "/register", "/login"].includes(pathname);
 
     const [isLogged, setIsLogged] = useState(false);
     const [workspaceName, setWorkspaceName] = useState<string | null>(null);
@@ -89,13 +89,13 @@ const Header = () => {
                         <nav className="flex items-center space-x-4">
                             <div className="flex space-x-2">
                                 <Link
-                                    href="/(auth)/login"
+                                    href="/login"
                                     className="px-4 py-2 text-gray-700 hover:text-gray-900 font-medium transition-colors"
                                 >
                                     Login
                                 </Link>
                                 <Link
-                                    href="/(auth)/register"
+                                    href="/register"
                                     className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
                                 >
                                     Começar
@@ -117,13 +117,13 @@ const Header = () => {
                                 >
                                     <div className="space-y-2">
                                         <Link
-                                            href="/(protected)/profile"
+                                            href="/profile"
                                             className="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
                                         >
                                             Perfil
                                         </Link>
                                         <Link
-                                            href="/(protected)/workspace"
+                                            href="/workspace"
                                             className="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
                                         >
                                             Workspace

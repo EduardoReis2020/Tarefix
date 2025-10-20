@@ -12,7 +12,7 @@ const HomePage = () => {
     useEffect(() => {
         const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
         if (token) {
-            router.replace('/(protected)/dashboard');
+            router.replace('/dashboard');
         } else {
             setCanRender(true);
         }

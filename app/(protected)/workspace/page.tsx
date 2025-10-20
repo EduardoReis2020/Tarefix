@@ -35,7 +35,7 @@ const WorkspacePage = () => {
                                 <aside className="w-64 bg-white border-r border-gray-200 p-4">
                                         <nav className="space-y-2">
                                                 <Link href="/dashboard" className="block px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700">Dashboard</Link>
-                                                <Link href="/(protected)/workspace" className="block px-3 py-2 rounded-lg bg-gray-900 text-white">Workspace</Link>
+                                                <Link href="/workspace" className="block px-3 py-2 rounded-lg bg-gray-900 text-white">Workspace</Link>
                                         </nav>
                                 </aside>
 
@@ -51,7 +51,7 @@ const WorkspacePage = () => {
                                                                         <li key={team.id} className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-sm">
                                                                                 <h3 className="text-lg font-medium text-gray-900">{team.name}</h3>
                                                                                 {team.description && <p className="text-sm text-gray-600 mt-1">{team.description}</p>}
-                                                                                <Link href={`/(protected)/teams/${team.id}`} className="text-sm text-gray-700 mt-3 inline-flex items-center hover:underline">
+                                                                                <Link href={`/teams/${team.id}`} className="text-sm text-gray-700 mt-3 inline-flex items-center hover:underline">
                                                                                         Abrir equipe →
                                                                                 </Link>
                                                                         </li>
