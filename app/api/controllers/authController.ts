@@ -1,9 +1,8 @@
-import { PrismaClient } from "@prisma/client";
+import prisma from "../../../lib/prisma";
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 import { signToken } from "../../../lib/jwt";
 
-const prisma = new PrismaClient();
 
 export async function registerUser(data: { name: string; email: string; password: string }) {
     const { name, email, password } = data;

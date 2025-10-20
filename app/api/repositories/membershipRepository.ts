@@ -1,6 +1,5 @@
-import { PrismaClient, TeamRole } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { TeamRole } from "@prisma/client";
+import prisma from "../../../lib/prisma";
 
 // Busca um membership pelo userId e teamId
 export async function findMembershipByUserAndTeam(userId: string, teamId: string) {

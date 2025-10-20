@@ -1,6 +1,4 @@
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import prisma from "../../../lib/prisma";
 
 // Cria um time
 export async function createTeam(data: { name: string; description?: string; ownerId: string }) {
