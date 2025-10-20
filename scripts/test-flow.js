@@ -27,7 +27,7 @@ function decodeJwt(token) {
         const b64 = payload.replace(/-/g, '+').replace(/_/g, '/');
         const buf = Buffer.from(b64, 'base64');
         return JSON.parse(buf.toString('utf8'));
-    } catch (e) {
+    } catch {
         return null;
     }
 }
@@ -79,8 +79,8 @@ async function main() {
     const teamName = `Team Test ${timestamp}`;
     const createTeam = await req('/api/teams', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: teamName, description: 'Equipe de teste', ownerId: userId }),
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ name: teamName, description: 'Equipe de teste', ownerId: 'self' }),
     });
 
     if (!createTeam.ok) {

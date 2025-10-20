@@ -23,5 +23,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/api/auth/me', '/api/:path*/private', '/api/tasks/:path*'],
+  matcher: ['/api/auth/me', '/api/:path*/private', '/api/tasks/:path*', '/api/teams/:path*', '/api/workspace'],
 };

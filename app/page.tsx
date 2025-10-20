@@ -1,9 +1,24 @@
-import React from 'react'
+"use client";
+import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Header from '../componentes/Header/Header'
 import Footer from '../componentes/Footer/Footer'
+import { useRouter } from 'next/navigation'
 
 const HomePage = () => {
+    const router = useRouter();
+    const [canRender, setCanRender] = useState(false);
+
+    useEffect(() => {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+        if (token) {
+            router.replace('/(protected)/dashboard');
+        } else {
+            setCanRender(true);
+        }
+    }, [router]);
+
+    if (!canRender) return null;
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
             {/* Header */}

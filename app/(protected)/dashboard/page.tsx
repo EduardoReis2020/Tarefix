@@ -14,20 +14,12 @@ const DashboardPage = () => {
 			{/* Sidebar */}
 			<aside className="w-64 bg-white border-r border-gray-200 flex flex-col">
 				{/* Navigation */}
-				<nav className="flex-1 px-4 py-6 space-y-2">
-					<Link href="/dashboard" className="block px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors">
-						📋 Minhas Tarefas
-					</Link>
-					<Link href="/projects" className="block px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors">
-						📂 Projetos
-					</Link>
-					<Link href="/calendar" className="block px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors">
-						📅 Calendário
-					</Link>
-					<Link href="/reports" className="block px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors">
-						📊 Relatórios
-					</Link>
-				</nav>
+				<aside className="w-64 bg-white border-r border-gray-200 p-4">
+						<nav className="space-y-2">
+								<Link href="/dashboard" className="block px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700">Dashboard</Link>
+								<Link href="/workspace" className="block px-3 py-2 rounded-lg bg-gray-900 text-white">Workspace</Link>
+						</nav>
+				</aside>
 			</aside>
 			{/* Main Content */}
 			<main className="flex-1 p-6 ">

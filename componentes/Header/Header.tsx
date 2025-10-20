@@ -19,6 +19,34 @@ const Header = () => {
 
     const isAuthPage = ["/", "/(auth)/register", "/(auth)/login", "/register", "/login"].includes(pathname);
 
+    const [isLogged, setIsLogged] = useState(false);
+    const [workspaceName, setWorkspaceName] = useState<string | null>(null);
+    const [userName, setUserName] = useState<string | null>(null);
+
+    useEffect(() => {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+        const logged = !!token;
+        setIsLogged(logged);
+        if (!logged) return;
+        // Buscar/garantir workspace e obter nome; também obter usuário atual
+        (async () => {
+            try {
+                const res = await fetch('/api/workspace', { method: 'POST', headers: { authorization: `Bearer ${token}` } });
+                const data = await res.json();
+                if (res.ok && data && data.name) setWorkspaceName(data.name);
+            } catch {
+                // ignora
+            }
+            try {
+                const resMe = await fetch('/api/auth/me', { headers: { authorization: `Bearer ${token}` } });
+                const dataMe = await resMe.json();
+                if (resMe.ok && dataMe?.user?.name) setUserName(dataMe.user.name);
+            } catch {
+                // ignora
+            }
+        })();
+    }, [pathname]);
+
     // Fechar modal quando clicar fora dele
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -40,14 +68,24 @@ const Header = () => {
         <header className="border-b border-gray-200 bg-white/80 backdrop-blur-sm">
             <div className="container mx-auto px-6 py-4">
                 <div className="flex items-center justify-between">
+                    {/* Lado esquerdo: logo quando deslogado, workspace quando logado */}
                     <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-gradient-to-r from-gray-900 to-gray-700 rounded-2xl flex items-center justify-center">
-                            <span className="text-white font-bold text-lg">T</span>
-                        </div>
-                        <h1 className="text-2xl font-bold text-gray-900">Tarefix</h1>
+                        {isLogged ? (
+                            <div className="flex p-2 items-center space-x-3 rounded-lg bg-gray-900">
+                                <p className="text-xs font-bold text-white">{workspaceName ?? 'Workspace'}</p>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="w-10 h-10 bg-gradient-to-r from-gray-900 to-gray-700 rounded-2xl flex items-center justify-center">
+                                    <span className="text-white font-bold text-lg">T</span>
+                                </div>
+                                <h1 className="text-2xl font-bold text-gray-900">Tarefix</h1>
+                            </>
+                        )}
                     </div>
-                    {isAuthPage ? (
-                        // Navegação para páginas públicas
+
+                    {/* Lado direito: navegação pública se deslogado em páginas públicas; menu usuário se logado */}
+                    {isAuthPage && !isLogged ? (
                         <nav className="flex items-center space-x-4">
                             <div className="flex space-x-2">
                                 <Link
@@ -65,13 +103,12 @@ const Header = () => {
                             </div>
                         </nav>
                     ) : (
-                        // Perfil do Usuário para páginas autenticadas
                         <div className="relative">
                             <button
                                 onClick={openModal}
-                                className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
+                                className="text-xs font-bold px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
                             >
-                                Nome_Usuário
+                                {userName ?? 'Minha Conta'}
                             </button>
                             {isModalOpen && (
                                 <div
@@ -86,14 +123,17 @@ const Header = () => {
                                             Perfil
                                         </Link>
                                         <Link
-                                            href="/settings"
+                                            href="/(protected)/workspace"
                                             className="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
                                         >
-                                            Configurações
+                                            Workspace
                                         </Link>
                                         <hr className="my-2" />
                                         <button
-                                            onClick={closeModal}
+                                            onClick={() => {
+                                                localStorage.removeItem('token');
+                                                window.location.href = '/';
+                                            }}
                                             className="w-full text-left px-3 py-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
                                         >
                                             Sair
