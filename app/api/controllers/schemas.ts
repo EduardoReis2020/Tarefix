@@ -13,7 +13,8 @@ export const loginSchema = z.object({
 });
 
 export const createTeamSchema = z.object({
-  ownerId: z.string().min(1, "ownerId é obrigatório"),
+  ownerId: z.string().min(1, "ownerId é obrigatório"), // pode vir 'self'
+  workspaceId: z.string().optional(),
   name: z.string().min(1, "nome do time é obrigatório"),
   description: z.string().optional(),
 });

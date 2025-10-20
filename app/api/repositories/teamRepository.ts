@@ -1,12 +1,13 @@
 import prisma from "../../../lib/prisma";
 
 // Cria um time
-export async function createTeam(data: { name: string; description?: string; ownerId: string }) {
+export async function createTeam(data: { name: string; description?: string; ownerId: string; workspaceId: string }) {
     // cast local para evitar divergências de tipos gerados pelo prisma client
     const payload = {
         name: data.name,
         description: data.description,
-        ownerId: data.ownerId,
+    ownerId: data.ownerId,
+    workspaceId: data.workspaceId,
         memberships: {
         create: {
             userId: data.ownerId,

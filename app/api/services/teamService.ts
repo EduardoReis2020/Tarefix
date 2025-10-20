@@ -1,7 +1,7 @@
 import * as teamRepo from "../repositories/teamRepository";
 
 // Criar um time
-export async function createTeamService(ownerId: string, data: { name: string; description?: string }) {
+export async function createTeamService(ownerId: string, data: { name: string; description?: string; workspaceId: string }) {
     if (!data.name || data.name.trim() === "") {
         throw new Error("O nome do time é obrigatório.");
     }
@@ -10,6 +10,7 @@ export async function createTeamService(ownerId: string, data: { name: string; d
         name: data.name,
         description: data.description,
         ownerId,
+        workspaceId: data.workspaceId,
     });
 }
 
