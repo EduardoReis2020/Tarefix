@@ -17,7 +17,7 @@ const Header = () => {
         setIsModalOpen(false);
     };
 
-    const isAuthPage = ["/", "/register", "/login"].includes(pathname);
+    const isAuthPage = ["/", "/(auth)/register", "/(auth)/login", "/register", "/login"].includes(pathname);
 
     // Fechar modal quando clicar fora dele
     useEffect(() => {
@@ -51,13 +51,13 @@ const Header = () => {
                         <nav className="flex items-center space-x-4">
                             <div className="flex space-x-2">
                                 <Link
-                                    href="/login"
+                                    href="/(auth)/login"
                                     className="px-4 py-2 text-gray-700 hover:text-gray-900 font-medium transition-colors"
                                 >
                                     Login
                                 </Link>
                                 <Link
-                                    href="/register"
+                                    href="/(auth)/register"
                                     className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
                                 >
                                     Começar
@@ -80,7 +80,7 @@ const Header = () => {
                                 >
                                     <div className="space-y-2">
                                         <Link
-                                            href="/profile"
+                                            href="/(protected)/profile"
                                             className="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
                                         >
                                             Perfil

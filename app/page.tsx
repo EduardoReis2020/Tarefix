@@ -27,13 +27,13 @@ const HomePage = () => {
 
                     <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
                         <Link 
-                            href="/register"
+                            href="/(auth)/register"
                             className="inline-flex items-center px-8 py-4 border bg-gray-900 text-white text-lg font-semibold rounded-lg hover:bg-gray-800 transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                         >
                             Começar Gratuitamente
                         </Link>
                         <Link 
-                            href="/login"
+                            href="/(auth)/login"
                             className="inline-flex items-center px-8 py-4 border border-gray-200 text-gray-700 text-lg font-semibold rounded-lg hover:bg-gray-50 transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                         >
                             Já tenho uma conta
