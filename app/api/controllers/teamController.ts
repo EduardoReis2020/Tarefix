@@ -1,9 +1,15 @@
 import { NextResponse } from "next/server";
 import * as teamService from "../services/teamService";
+import { createTeamSchema, updateTeamSchema } from "./schemas";
 
 export async function createTeamController(req: Request) {
     try {
-        const data = await req.json();
+        const body = await req.json();
+        const parsed = createTeamSchema.safeParse(body);
+        if (!parsed.success) {
+            return NextResponse.json({ error: "Dados inválidos", details: parsed.error.flatten() }, { status: 400 });
+        }
+        const data = parsed.data;
         const team = await teamService.createTeamService(data.ownerId, data);
         return NextResponse.json({ message: "Equipe criada com sucesso!", team }, { status: 201 });
     } catch (error: unknown) {
@@ -22,7 +28,12 @@ export async function getTeamByIdController(req: Request, { params }: { params: 
 
 export async function updateTeamController(req: Request, { params }: { params: { id: string } }) {
     try {
-        const data = await req.json();
+        const body = await req.json();
+        const parsed = updateTeamSchema.safeParse(body);
+        if (!parsed.success) {
+            return NextResponse.json({ error: "Dados inválidos", details: parsed.error.flatten() }, { status: 400 });
+        }
+        const data = parsed.data;
         const team = await teamService.updateTeamService(params.id, params.id, data);
         return NextResponse.json(team, { status: 200 });
     } catch (error: unknown) {

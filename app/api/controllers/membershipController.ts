@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import * as membershipService from "../services/membershipService";
+import { membershipAddSchema, membershipChangeRoleSchema, membershipRemoveSchema } from "./schemas";
 
 export async function addMemberController(req: Request) {
     try {
@@ -7,7 +8,11 @@ export async function addMemberController(req: Request) {
         if (!userId) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
         const body = await req.json();
-        const { teamId, userId: newUserId, role } = body;
+        const parsed = membershipAddSchema.safeParse(body);
+        if (!parsed.success) {
+            return NextResponse.json({ error: "Dados inválidos", details: parsed.error.flatten() }, { status: 400 });
+        }
+        const { teamId, userId: newUserId, role } = parsed.data;
 
         const membership = await membershipService.addMemberToTeam({
             requesterId: userId,
@@ -28,7 +33,11 @@ export async function changeMemberRoleController(req: Request) {
         if (!requesterId) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
         const body = await req.json();
-        const { membershipId, newRole } = body;
+        const parsed = membershipChangeRoleSchema.safeParse(body);
+        if (!parsed.success) {
+            return NextResponse.json({ error: "Dados inválidos", details: parsed.error.flatten() }, { status: 400 });
+        }
+        const { membershipId, newRole } = parsed.data;
 
         const result = await membershipService.changeMemberRole({
             requesterId,
@@ -48,7 +57,11 @@ export async function removeMemberController(req: Request) {
         if (!requesterId) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
         const body = await req.json();
-        const { membershipId } = body;
+        const parsed = membershipRemoveSchema.safeParse(body);
+        if (!parsed.success) {
+            return NextResponse.json({ error: "Dados inválidos", details: parsed.error.flatten() }, { status: 400 });
+        }
+        const { membershipId } = parsed.data;
 
         await membershipService.removeMemberFromTeam({ requesterId, membershipId });
         return NextResponse.json({ message: "Membro removido com sucesso" }, { status: 200 });

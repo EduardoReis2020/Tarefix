@@ -2,17 +2,15 @@ import prisma from "../../../lib/prisma";
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 import { signToken } from "../../../lib/jwt";
+import { loginSchema, registerSchema } from "./schemas";
 
 
 export async function registerUser(data: { name: string; email: string; password: string }) {
-    const { name, email, password } = data;
-
-    if (!name || !email || !password) {
-        return NextResponse.json(
-            { error: "Todos os campos são obrigatórios" },
-            { status: 400 }
-        );
+    const parse = registerSchema.safeParse(data);
+    if (!parse.success) {
+        return NextResponse.json({ error: "Dados inválidos", details: parse.error.flatten() }, { status: 400 });
     }
+    const { name, email, password } = parse.data;
 
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
@@ -35,14 +33,11 @@ export async function registerUser(data: { name: string; email: string; password
 }
 
 export async function loginUser(data: { email: string; password: string }) {
-    const { email, password } = data;
-
-    if (!email || !password) {
-        return NextResponse.json(
-            { error: "Email e senha são obrigatórios" },
-            { status: 400 }
-        );
+    const parse = loginSchema.safeParse(data);
+    if (!parse.success) {
+        return NextResponse.json({ error: "Dados inválidos", details: parse.error.flatten() }, { status: 400 });
     }
+    const { email, password } = parse.data;
 
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import * as taskService from "../services/taskService";
+import { assignTaskSchema, createTaskSchema, updateTaskSchema } from "./schemas";
 
 export async function getTasksController(req: Request) {
     try {
@@ -27,8 +28,12 @@ export async function createTaskController(req: Request) {
         const userId = req.headers.get("x-user-id");
         if (!userId) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
-        const data = await req.json();
-        const task = await taskService.createTaskService(userId, data);
+        const body = await req.json();
+        const parsed = createTaskSchema.safeParse(body);
+        if (!parsed.success) {
+            return NextResponse.json({ error: "Dados inválidos", details: parsed.error.flatten() }, { status: 400 });
+        }
+        const task = await taskService.createTaskService(userId, parsed.data);
         return NextResponse.json(task, { status: 201 });
     } catch (error: unknown) {
         return NextResponse.json({ error: (error as Error).message }, { status: 400 });
@@ -40,8 +45,12 @@ export async function updateTaskController(req: Request, { params }: { params: {
         const userId = req.headers.get("x-user-id");
         if (!userId) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
-        const data = await req.json();
-        const task = await taskService.updateTaskService(userId, params.id, data);
+        const body = await req.json();
+        const parsed = updateTaskSchema.safeParse(body);
+        if (!parsed.success) {
+            return NextResponse.json({ error: "Dados inválidos", details: parsed.error.flatten() }, { status: 400 });
+        }
+        const task = await taskService.updateTaskService(userId, params.id, parsed.data);
         return NextResponse.json(task, { status: 200 });
     } catch (error: unknown) {
         return NextResponse.json({ error: (error as Error).message }, { status: 400 });
@@ -77,8 +86,12 @@ export async function assignUserToTaskController(req: Request, { params }: { par
         const userId = req.headers.get("x-user-id");
         if (!userId) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
-        const { assigneeId } = await req.json();
-        const result = await taskService.assignUserToTaskService(userId, params.id, assigneeId);
+        const body = await req.json();
+        const parsed = assignTaskSchema.safeParse(body);
+        if (!parsed.success) {
+            return NextResponse.json({ error: "Dados inválidos", details: parsed.error.flatten() }, { status: 400 });
+        }
+        const result = await taskService.assignUserToTaskService(userId, params.id, parsed.data.assigneeId);
         return NextResponse.json(result, { status: 200 });
     } catch (error: unknown) {
         return NextResponse.json({ error: (error as Error).message }, { status: 400 });

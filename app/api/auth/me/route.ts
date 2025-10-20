@@ -1,5 +1,3 @@
-// prisma centralizado em lib/prisma (não utilizado diretamente nesta rota)
-
 import { NextRequest } from "next/server";
 import * as authController from "../../controllers/authController";
 
