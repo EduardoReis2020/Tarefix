@@ -2,6 +2,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Header from "@/componentes/Header/Header";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 
 type Task = {
     id: string;
@@ -13,8 +14,9 @@ type Task = {
     dueDate?: string | null;
 };
 
-export default function TeamPage({ params }: { params: { id: string } }) {
-    const teamId = params.id;
+export default function TeamPage() {
+    const params = useParams();
+    const teamId = Array.isArray(params?.id) ? params.id[0] : (params?.id as string);
     const [tasks, setTasks] = useState<Task[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
