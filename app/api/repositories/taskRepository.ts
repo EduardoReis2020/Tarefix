@@ -9,6 +9,7 @@ export async function createTask(
         startDate?: Date;
         dueDate?: Date;
         priority?: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+        order?: number;
     }) {
 
     return prisma.task.create({
@@ -38,6 +39,10 @@ export async function findTasksByTeam(teamId: string) {
             comments: true,
             tags: true,
         },
+        orderBy: [
+            { order: "asc" },
+            { createdAt: "asc" },
+        ],
     });
 }
 
@@ -55,6 +60,65 @@ export async function findTasksByUser(userId: string) {
     });
 }
 
+// Busca todas as tarefas dos times em que o usuário é membro
+export async function findTasksForUserTeams(userId: string) {
+    return prisma.task.findMany({
+        where: {
+            team: {
+                memberships: {
+                    some: { userId },
+                },
+            },
+        },
+        include: {
+            assignees: true,
+            comments: true,
+            tags: true,
+            team: true,
+        },
+        orderBy: [
+            { dueDate: "asc" },
+            { createdAt: "desc" },
+        ],
+    });
+}
+
+// Marca como LATE todas as tarefas de um time cujo prazo já passou e não estão concluídas
+export async function markOverdueTasksLateForTeam(teamId: string) {
+    const now = new Date();
+    await prisma.task.updateMany({
+        where: {
+            teamId,
+            dueDate: { lt: now },
+            status: { notIn: ["DONE", "LATE"] },
+        },
+        data: { status: "LATE" },
+    });
+}
+
+// Marca como LATE as tarefas dos times em que o usuário é membro, cujo prazo passou e não estão concluídas
+export async function markOverdueTasksLateForUserTeams(userId: string) {
+    const now = new Date();
+    // Busca IDs das tarefas a atualizar (para evitar uso de filtros relacionais em updateMany em alguns ambientes)
+    const overdue = await prisma.task.findMany({
+        where: {
+            dueDate: { lt: now },
+            status: { notIn: ["DONE", "LATE"] },
+            team: {
+                memberships: {
+                    some: { userId },
+                },
+            },
+        },
+        select: { id: true },
+    });
+    if (overdue.length === 0) return;
+    await prisma.task.updateMany({
+        where: { id: { in: overdue.map(o => o.id) } },
+        data: { status: "LATE" },
+    });
+}
+
 // Atualiza uma tarefa
 export async function updateTask(
     taskId: string, 
@@ -65,6 +129,7 @@ export async function updateTask(
         priority: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
         startDate: Date;
         dueDate: Date;
+        order: number;
     }>) {
 
     return prisma.task.update({

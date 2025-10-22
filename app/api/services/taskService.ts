@@ -4,12 +4,17 @@ import { findMembershipByUserAndTeam } from "../repositories/membershipRepositor
 // Buscar tarefas de um usuário
 export async function getTasksForUserService(userId: string) {
     if (!userId) throw new Error("ID de usuário é obrigatório.");
-    return taskRepo.findTasksByUser(userId);
+    // Antes de listar, marca vencidas como LATE
+    await taskRepo.markOverdueTasksLateForUserTeams(userId);
+    // Dashboard deve considerar tarefas de qualquer time em que o usuário seja membro
+    return taskRepo.findTasksForUserTeams(userId);
 }
 
 // Buscar tarefas de um time
 export async function getTasksByTeamService(teamId: string) {
     if (!teamId) throw new Error("ID do time é obrigatório.");
+    // Atualiza status LATE para vencidas deste time antes de listar
+    await taskRepo.markOverdueTasksLateForTeam(teamId);
     return taskRepo.findTasksByTeam(teamId);
 }
 
@@ -57,6 +62,7 @@ export async function updateTaskService(
         priority: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
         startDate: Date;
         dueDate: Date;
+        order: number;
     }>) {
     const task = await taskRepo.findTaskById(taskId);
     if (!task) throw new Error("Tarefa não encontrada.");

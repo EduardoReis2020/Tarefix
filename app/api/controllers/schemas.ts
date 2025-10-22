@@ -40,6 +40,7 @@ export const updateTaskSchema = z.object({
   priority: z.enum(["LOW", "MEDIUM", "HIGH", "CRITICAL"]).optional(),
   startDate: z.coerce.date().optional(),
   dueDate: z.coerce.date().optional(),
+  order: z.coerce.number().int().min(0).optional(),
 });
 
 export const assignTaskSchema = z.object({
