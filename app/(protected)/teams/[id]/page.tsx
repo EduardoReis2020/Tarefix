@@ -12,6 +12,8 @@ type Task = {
     priority: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
     startDate?: string | null;
     dueDate?: string | null;
+    order?: number | null;
+    assignees?: Array<{ id: string; name: string }>;
 };
 
 export default function TeamPage() {
@@ -23,29 +25,35 @@ export default function TeamPage() {
         return d.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
     };
     const [tasks, setTasks] = useState<Task[]>([]);
+    const [teamName, setTeamName] = useState<string>("Equipe");
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [view, setView] = useState<"list" | "board" | "calendar" | "table">("list");
     const [modalOpen, setModalOpen] = useState(false);
     const [editingTask, setEditingTask] = useState<Task | null>(null);
+    const [dragOverId, setDragOverId] = useState<string | null>(null);
 
     useEffect(() => {
         const token = localStorage.getItem("token");
         if (!token) return;
         (async () => {
-        setLoading(true);
-        try {
-            const res = await fetch(`/api/tasks?teamId=${teamId}`, {
-            headers: { authorization: `Bearer ${token}` },
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data?.error || "Erro ao carregar tarefas");
-            setTasks(data || []);
-        } catch (e) {
-            setError((e as Error).message);
-        } finally {
-            setLoading(false);
-        }
+            setLoading(true);
+            try {
+                const [resTasks, resTeam] = await Promise.all([
+                    fetch(`/api/tasks?teamId=${teamId}`, { headers: { authorization: `Bearer ${token}` } }),
+                    fetch(`/api/teams/${teamId}`, { headers: { authorization: `Bearer ${token}` } }),
+                ]);
+                const tasksJson = await resTasks.json();
+                const teamJson = await resTeam.json();
+                if (!resTasks.ok) throw new Error(tasksJson?.error || "Erro ao carregar tarefas");
+                if (!resTeam.ok) throw new Error(teamJson?.error || "Erro ao carregar equipe");
+                setTasks(tasksJson || []);
+                setTeamName(teamJson?.name || "Equipe");
+            } catch (e) {
+                setError((e as Error).message);
+            } finally {
+                setLoading(false);
+            }
         })();
     }, [teamId]);
 
@@ -108,6 +116,78 @@ export default function TeamPage() {
         };
     }, [tasks]);
 
+    // Drag & Drop (Board)
+    const onDragStart = (task: Task) => (e: React.DragEvent) => {
+        e.dataTransfer.setData("application/x-task-id", task.id);
+        e.dataTransfer.effectAllowed = "move";
+    };
+    const onDragOverColumn = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+    };
+    // Reatribui ordem sequencial e persiste no backend
+    const renumberAndPersist = async (status: Task["status"], list: Task[]) => {
+        // Reatribui ordem sequencial por passos de 10 e persiste
+        const token = localStorage.getItem("token");
+        if (!token) throw new Error("Sem token");
+        let idx = 0;
+        for (const t of list) {
+            const nextOrder = idx * 10;
+            idx++;
+            if (t.order !== nextOrder || t.status !== status) {
+                await fetch(`/api/tasks/${t.id}`, {
+                    method: "PATCH",
+                    headers: { "content-type": "application/json", authorization: `Bearer ${token}` },
+                    body: JSON.stringify({ order: nextOrder, status }),
+                });
+                t.order = nextOrder;
+                t.status = status;
+            }
+        }
+    };
+
+    const onDropToColumn = (newStatus: Task["status"]) => async (e: React.DragEvent) => {
+        e.preventDefault();
+        const id = e.dataTransfer.getData("application/x-task-id");
+        if (!id) return;
+        const task = tasks.find(t => t.id === id);
+        if (!task) return;
+
+        const prev = [...tasks];
+
+        // Constrói nova lista com reordenação dentro da coluna alvo
+        const without = tasks.filter(t => t.id !== id);
+        const targetList = without.filter(t => (newStatus ? t.status === newStatus : t.status === task.status));
+        const other = without.filter(t => (newStatus ? t.status !== newStatus : t.status !== task.status));
+
+        const insertIndex = dragOverId && targetList.find(x => x.id === dragOverId)
+            ? targetList.findIndex(x => x.id === dragOverId)
+            : targetList.length; // fim
+
+        const moved: Task = { ...task, status: newStatus };
+        const newTarget = [
+            ...targetList.slice(0, insertIndex),
+            moved,
+            ...targetList.slice(insertIndex),
+        ];
+        const nextTasks = [...other, ...newTarget];
+        setDragOverId(null);
+        setTasks(nextTasks);
+        try {
+            // RENUMERA e persiste somente a coluna de destino com base na lista calculada
+            const target = newTarget;
+            await renumberAndPersist(newStatus, target);
+        } catch (err) {
+            setTasks(prev);
+            alert((err as Error).message);
+        }
+    };
+
+    const onCardDragEnter = (id: string) => (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDragOverId(id);
+    };
     return (
         <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
         <Header />
@@ -123,7 +203,7 @@ export default function TeamPage() {
             {/* Conteúdo */}
             <main className="flex-1 p-6 space-y-4">
             <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-semibold text-gray-900">Equipe</h1>
+                <h1 className="text-2xl font-semibold text-gray-900">{teamName}</h1>
                 <div className="flex gap-2">
                 <button onClick={openCreateModal} className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800">Nova tarefa</button>
                 <select value={view} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setView(e.target.value as "list" | "board" | "calendar" | "table")} className="border rounded-lg px-3 py-2">
@@ -140,36 +220,128 @@ export default function TeamPage() {
 
             {!loading && !error && (
                 <div>
-                {view === "list" && (
-                    <ul className="space-y-2">
-                    {tasks.map(t => (
-                        <li key={t.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-sm flex justify-between items-center">
-                        <div>
-                            <p className="font-medium text-gray-900">{t.title}</p>
-                            {t.description && <p className="text-sm text-gray-600">{t.description}</p>}
-                        </div>
-                        <button onClick={() => openEditModal(t)} className="text-sm text-gray-700 hover:underline">Editar</button>
-                        </li>
-                    ))}
-                    </ul>
-                )}
+                
 
                 {view === "board" && (
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    {(["TODO","IN_PROGRESS","DONE","LATE"] as const).map(col => (
-                        <div key={col} className="bg-white border border-gray-200 rounded-lg p-3">
-                        <h3 className="font-semibold text-gray-900 mb-2">{col.replace('_',' ')}</h3>
-                        <div className="space-y-2">
-                            {grouped[col].map(t => (
-                            <div key={t.id} className="border rounded p-3 hover:shadow cursor-pointer" onClick={() => openEditModal(t)}>
-                                <p className="font-medium">{t.title}</p>
-                                {t.description && <p className="text-sm text-gray-600">{t.description}</p>}
+                        {(["TODO","IN_PROGRESS","DONE","LATE"] as const).map((col) => (
+                            <div
+                                key={col}
+                                onDragOver={onDragOverColumn}
+                                onDrop={onDropToColumn(col)}
+                                className={`rounded-2xl border p-3 min-h-[320px] flex flex-col gap-3 transition-colors
+                                    ${col === "TODO" ? "bg-gray-50 border-gray-200" : ""}
+                                    ${col === "IN_PROGRESS" ? "bg-blue-50 border-blue-200" : ""}
+                                    ${col === "DONE" ? "bg-green-50 border-green-200" : ""}
+                                    ${col === "LATE" ? "bg-red-50 border-red-200" : ""}
+                                `}
+                            >
+                                <div className="flex items-center justify-between">
+                                    <h3 className="font-semibold text-gray-900 uppercase text-xs tracking-wide">
+                                        {col === "TODO" ? "A fazer" : col === "IN_PROGRESS" ? "Em andamento" : col === "DONE" ? "Concluída" : "Atrasada"}
+                                    </h3>
+                                    <span className="text-[11px] text-gray-700 bg-white/60 border rounded-full px-2 py-0.5">
+                                        {grouped[col].length}
+                                    </span>
+                                </div>
+                                <div className="flex-1 space-y-3 rounded-xl border-2 border-dashed border-transparent hover:border-gray-300/70 p-1">
+                                    {grouped[col].map(t => (
+                                        <div
+                                            key={t.id}
+                                            draggable
+                                            onDragStart={onDragStart(t)}
+                                            onDragEnter={onCardDragEnter(t.id)}
+                                            onDoubleClick={() => openEditModal(t)}
+                                            className="bg-white border border-gray-200 rounded-xl p-3 shadow-sm hover:shadow-md cursor-grab active:cursor-grabbing"
+                                        >
+                                            <div className="flex items-start justify-between gap-2">
+                                                <p className="font-medium text-gray-900 text-sm line-clamp-2">{t.title}</p>
+                                                <div className="shrink-0 flex items-center gap-1">
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); openEditModal(t); }}
+                                                        title="Editar"
+                                                        className="inline-flex items-center justify-center w-6 h-6 rounded-md border border-gray-200 text-gray-600 hover:text-gray-900 hover:border-gray-300"
+                                                    >
+                                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path d="M13.586 3.586a2 2 0 0 1 2.828 2.828l-8.5 8.5a2 2 0 0 1-.878.506l-3 1a1 1 0 0 1-1.265-1.265l1-3a2 2 0 0 1 .506-.878l8.5-8.5Z"/><path d="M5 13l2 2"/></svg>
+                                                    </button>
+                                                    <span className={`shrink-0 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold
+                                                        ${t.priority === "LOW" ? "bg-gray-100 text-gray-700" : ""}
+                                                        ${t.priority === "MEDIUM" ? "bg-yellow-100 text-yellow-800" : ""}
+                                                        ${t.priority === "HIGH" ? "bg-orange-100 text-orange-800" : ""}
+                                                        ${t.priority === "CRITICAL" ? "bg-red-100 text-red-800" : ""}
+                                                    `}>
+                                                        {t.priority === "LOW" ? "Baixa" : t.priority === "MEDIUM" ? "Média" : t.priority === "HIGH" ? "Alta" : "Crítica"}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            {t.description && (
+                                                <p className="mt-1 text-xs text-gray-600 line-clamp-2">{t.description}</p>
+                                            )}
+                                            <div className="mt-2 flex items-center justify-between">
+                                                <span className="flex items-center gap-1 text-[11px] text-gray-600">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path d="M6 2a1 1 0 0 0-1 1v1H4a2 2 0 0 0-2 2v1h16V6a2 2 0 0 0-2-2h-1V3a1 1 0 1 0-2 0v1H7V3a1 1 0 0 0-1-1Z"/><path d="M18 9H2v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9Z"/></svg>
+                                                    {formatDate(t.dueDate)}
+                                                </span>
+                                                <div className="flex -space-x-2">
+                                                    {(t.assignees || []).slice(0,3).map(u => (
+                                                        <div key={u.id} className="w-6 h-6 rounded-full bg-gray-800 text-white text-[10px] flex items-center justify-center ring-2 ring-white" title={u.name}>
+                                                            {u.name.split(' ').map(s=>s[0]).join('').slice(0,2).toUpperCase()}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
-                            ))}
-                        </div>
-                        </div>
-                    ))}
+                        ))}
                     </div>
+                )}
+                {view === "list" && (
+                    <ul className="space-y-2">
+                        {tasks.map(t => (
+                            <li key={t.id} className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-sm">
+                                <div className="flex items-start justify-between gap-3">
+                                    <div className="flex-1 min-w-0" onClick={() => openEditModal(t)}>
+                                        <p className="font-medium text-gray-900 cursor-pointer hover:underline">{t.title}</p>
+                                        <div className="mt-1 flex items-center gap-3 text-xs text-gray-600">
+                                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full font-semibold
+                                                ${t.status === "TODO" ? "bg-gray-200 text-gray-700" : t.status === "IN_PROGRESS" ? "bg-blue-100 text-blue-700" : t.status === "DONE" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}
+                                            `}>
+                                                {t.status === "TODO" ? "A fazer" : t.status === "IN_PROGRESS" ? "Em andamento" : t.status === "DONE" ? "Concluída" : "Atrasada"}
+                                            </span>
+                                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full font-semibold
+                                                ${t.priority === "LOW" ? "bg-gray-100 text-gray-700" : t.priority === "MEDIUM" ? "bg-yellow-100 text-yellow-800" : t.priority === "HIGH" ? "bg-orange-100 text-orange-800" : "bg-red-100 text-red-800"}
+                                            `}>
+                                                {t.priority === "LOW" ? "Baixa" : t.priority === "MEDIUM" ? "Média" : t.priority === "HIGH" ? "Alta" : "Crítica"}
+                                            </span>
+                                            <span className="inline-flex items-center gap-1">
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path d="M6 2a1 1 0 0 0-1 1v1H4a2 2 0 0 0-2 2v1h16V6a2 2 0 0 0-2-2h-1V3a1 1 0 1 0-2 0v1H7V3a1 1 0 0 0-1-1Z"/><path d="M18 9H2v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9Z"/></svg>
+                                                {formatDate(t.dueDate)}
+                                            </span>
+                                        </div>
+                                        {t.description && <p className="mt-1 text-sm text-gray-600 line-clamp-2">{t.description}</p>}
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <div className="flex -space-x-2">
+                                            {(t.assignees || []).slice(0,3).map(u => (
+                                                <div key={u.id} className="w-7 h-7 rounded-full bg-gray-800 text-white text-[10px] flex items-center justify-center ring-2 ring-white" title={u.name}>
+                                                    {u.name.split(' ').map(s=>s[0]).join('').slice(0,2).toUpperCase()}
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <button
+                                            onClick={() => openEditModal(t)}
+                                            title="Editar"
+                                            className="inline-flex items-center justify-center w-8 h-8 rounded-md border border-gray-200 text-gray-600 hover:text-gray-900 hover:border-gray-300"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path d="M13.586 3.586a2 2 0 0 1 2.828 2.828l-8.5 8.5a2 2 0 0 1-.878.506l-3 1a1 1 0 0 1-1.265-1.265l1-3a2 2 0 0 1 .506-.878l8.5-8.5Z"/><path d="M5 13l2 2"/></svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
                 )}
 
                 {view === "calendar" && (
@@ -197,6 +369,7 @@ export default function TeamPage() {
                                 <th className="px-3 py-2 text-left">Prioridade</th>
                                 <th className="px-3 py-2 text-left">Início</th>
                                 <th className="px-3 py-2 text-left">Entrega</th>
+                                <th className="px-3 py-2 text-left">Atribuídos</th>
                                 <th className="px-3 py-2 text-right"></th>
                             </tr>
                             </thead>
@@ -258,17 +431,27 @@ export default function TeamPage() {
                                 <td className="px-4 py-3 text-gray-600">
                                 {formatDate(t.startDate)}
                                 </td>
-                                <td className="px-4 py-3 text-gray-600">
-                                {formatDate(t.dueDate)}
+                                <td className="px-4 py-3 text-gray-600">{formatDate(t.dueDate)}</td>
+
+                                {/* Atribuídos */}
+                                <td className="px-4 py-3">
+                                    <div className="flex -space-x-2">
+                                        {(t.assignees || []).slice(0,5).map(u => (
+                                            <div key={u.id} className="w-7 h-7 rounded-full bg-gray-800 text-white text-[10px] flex items-center justify-center ring-2 ring-white" title={u.name}>
+                                                {u.name.split(' ').map(s=>s[0]).join('').slice(0,2).toUpperCase()}
+                                            </div>
+                                        ))}
+                                    </div>
                                 </td>
 
                                 {/* Ações */}
                                 <td className="px-4 py-3 text-right">
                                 <button
                                     onClick={() => openEditModal(t)}
-                                    className="text-sm text-gray-700 hover:text-gray-900 hover:underline"
+                                    title="Editar"
+                                    className="inline-flex items-center justify-center w-8 h-8 rounded-md border border-gray-200 text-gray-600 hover:text-gray-900 hover:border-gray-300"
                                 >
-                                    Editar
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path d="M13.586 3.586a2 2 0 0 1 2.828 2.828l-8.5 8.5a2 2 0 0 1-.878.506l-3 1a1 1 0 0 1-1.265-1.265l1-3a2 2 0 0 1 .506-.878l8.5-8.5Z"/><path d="M5 13l2 2"/></svg>
                                 </button>
                                 </td>
                                 </tr>
@@ -311,47 +494,47 @@ function TaskModal({ task, onClose, onSave }: { task: Task | null; onClose: () =
 
     return (
         <div className="fixed inset-0 bg-black/30 flex items-center justify-center p-4">
-        <div className="bg-white w-full max-w-lg rounded-lg p-4 space-y-3">
+        <div className="bg-white w-full max-w-lg rounded-xl p-5 space-y-4 border border-gray-200 shadow-sm">
             <h2 className="text-lg font-semibold text-gray-900">{task ? 'Editar tarefa' : 'Nova tarefa'}</h2>
-            <div className="space-y-2">
-            <input className="w-full border rounded px-3 py-2" placeholder="Título" value={title} onChange={(e) => setTitle(e.target.value)} />
-            <textarea className="w-full border rounded px-3 py-2" placeholder="Descrição" value={description} onChange={(e) => setDescription(e.target.value)} />
+            <div className="space-y-3">
+            <input className="w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-300" placeholder="Título" value={title} onChange={(e) => setTitle(e.target.value)} />
+            <textarea className="w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-300" placeholder="Descrição" value={description} onChange={(e) => setDescription(e.target.value)} />
             <div className="grid grid-cols-2 gap-2">
                 <div>
                 <label className="block text-xs text-gray-600">Prioridade</label>
-                <select className="w-full border rounded px-2 py-2" value={priority} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setPriority(e.target.value as Task["priority"])}>
+                <select className="w-full border border-gray-200 rounded-lg px-2 py-2" value={priority} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setPriority(e.target.value as Task["priority"])}>
                     <option value="LOW">Baixa</option>
                     <option value="MEDIUM">Média</option>
                     <option value="HIGH">Alta</option>
                     <option value="CRITICAL">Crítica</option>
                 </select>
                 </div>
-                                {task && (
-                                    <div>
-                                        <label className="block text-xs text-gray-600">Status</label>
-                                        <select className="w-full border rounded px-2 py-2" value={status} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setStatus(e.target.value as Task["status"])}>
-                                                <option value="TODO">A fazer</option>
-                                                <option value="IN_PROGRESS">Em andamento</option>
-                                                <option value="DONE">Concluída</option>
-                                                <option value="LATE">Atrasada</option>
-                                        </select>
-                                    </div>
-                                )}
+                {task && (
+                    <div>
+                        <label className="block text-xs text-gray-600">Status</label>
+                        <select className="w-full border border-gray-200 rounded-lg px-2 py-2" value={status} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setStatus(e.target.value as Task["status"]) }>
+                                <option value="TODO">A fazer</option>
+                                <option value="IN_PROGRESS">Em andamento</option>
+                                <option value="DONE">Concluída</option>
+                                <option value="LATE">Atrasada</option>
+                        </select>
+                    </div>
+                )}
             </div>
             <div className="grid grid-cols-2 gap-2">
                 <div>
                 <label className="block text-xs text-gray-600">Início</label>
-                <input type="date" className="w-full border rounded px-2 py-2" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+                <input type="date" className="w-full border border-gray-200 rounded-lg px-2 py-2" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
                 </div>
                 <div>
                 <label className="block text-xs text-gray-600">Entrega</label>
-                <input type="date" className="w-full border rounded px-2 py-2" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+                <input type="date" className="w-full border border-gray-200 rounded-lg px-2 py-2" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
                 </div>
             </div>
             </div>
             <div className="flex justify-end gap-2 pt-2">
-            <button onClick={onClose} className="px-4 py-2 border rounded">Cancelar</button>
-            <button onClick={() => onSave({ title, description, priority, startDate, dueDate, status })} className="px-4 py-2 bg-gray-900 text-white rounded">Salvar</button>
+            <button onClick={onClose} className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50">Cancelar</button>
+            <button onClick={() => onSave({ title, description, priority, startDate, dueDate, status })} className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800">Salvar</button>
             </div>
         </div>
         </div>
