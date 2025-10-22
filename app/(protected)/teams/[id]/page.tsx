@@ -17,6 +17,11 @@ type Task = {
 export default function TeamPage() {
     const params = useParams();
     const teamId = Array.isArray(params?.id) ? params.id[0] : (params?.id as string);
+    const formatDate = (iso?: string | null) => {
+        if (!iso) return "-";
+        const d = new Date(iso);
+        return d.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+    };
     const [tasks, setTasks] = useState<Task[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -175,7 +180,7 @@ export default function TeamPage() {
                         {tasks.filter(t => !!t.dueDate).map(t => (
                         <li key={t.id} className="flex justify-between">
                             <span>{t.title}</span>
-                            <span className="text-gray-500 text-sm">{new Date(t.dueDate!).toLocaleDateString()}</span>
+                            <span className="text-gray-500 text-sm">{formatDate(t.dueDate!)}</span>
                         </li>
                         ))}
                     </ul>
@@ -197,7 +202,7 @@ export default function TeamPage() {
                             </thead>
                             <tbody>
                             {tasks.map(t => (
-                                <tr key={t.id} className="border-b last:border-none hover:bg-gray-50 transition-colors">
+                                <tr key={t.id} className="border-b border-gray-400 last:border-none hover:bg-gray-50 transition-colors">
                                 {/* Título */}
                                 <td className="px-4 py-3 font-medium text-gray-900">{t.title}</td>
 
@@ -251,12 +256,10 @@ export default function TeamPage() {
 
                                 {/* Datas */}
                                 <td className="px-4 py-3 text-gray-600">
-                                {t.startDate
-                                    ? new Date(t.startDate).toLocaleDateString()
-                                    : "-"}
+                                {formatDate(t.startDate)}
                                 </td>
                                 <td className="px-4 py-3 text-gray-600">
-                                {t.dueDate ? new Date(t.dueDate).toLocaleDateString() : "-"}
+                                {formatDate(t.dueDate)}
                                 </td>
 
                                 {/* Ações */}
