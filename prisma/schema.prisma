@@ -132,6 +132,7 @@ model Task {
   description String?
   priority    TaskPriority @default(MEDIUM)
   status      TaskStatus   @default(TODO)
+  order       Int          @default(0)
   createdAt   DateTime     @default(now())
   startDate   DateTime?
   dueDate     DateTime?
