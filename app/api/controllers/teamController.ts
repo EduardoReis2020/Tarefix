@@ -36,7 +36,9 @@ export async function createTeamController(req: Request) {
 
 export async function getTeamByIdController(req: Request, { params }: { params: { id: string } }) {
     try {
-        const team = await teamService.getTeamDetailsService(params.id, params.id);
+        const userId = req.headers.get("x-user-id");
+        if (!userId) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+        const team = await teamService.getTeamDetailsService(userId, params.id);
         return NextResponse.json(team, { status: 200 });
     } catch (error: unknown) {
         return NextResponse.json({ error: (error as Error).message }, { status: 404 });
@@ -51,7 +53,9 @@ export async function updateTeamController(req: Request, { params }: { params: {
             return NextResponse.json({ error: "Dados inválidos", details: parsed.error.flatten() }, { status: 400 });
         }
         const data = parsed.data;
-        const team = await teamService.updateTeamService(params.id, params.id, data);
+        const userId = req.headers.get("x-user-id");
+        if (!userId) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+        const team = await teamService.updateTeamService(userId, params.id, data);
         return NextResponse.json(team, { status: 200 });
     } catch (error: unknown) {
         return NextResponse.json({ error: (error as Error).message }, { status: 400 });
@@ -60,7 +64,9 @@ export async function updateTeamController(req: Request, { params }: { params: {
 
 export async function deleteTeamController(req: Request, { params }: { params: { id: string } }) {
     try {
-        await teamService.deleteTeamService(params.id, params.id);
+        const userId = req.headers.get("x-user-id");
+        if (!userId) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+        await teamService.deleteTeamService(userId, params.id);
         return NextResponse.json({ message: "Equipe deletada com sucesso." }, { status: 200 });
     } catch (error: unknown) {
         return NextResponse.json({ error: (error as Error).message }, { status: 400 });
