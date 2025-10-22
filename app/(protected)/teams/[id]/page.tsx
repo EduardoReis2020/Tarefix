@@ -71,10 +71,13 @@ export default function TeamPage() {
             const errMsg = (data && typeof data === 'object' && 'error' in data) ? (data as { error?: string }).error : undefined;
             if (!res.ok) throw new Error(errMsg || "Erro ao atualizar tarefa");
         } else {
+            // Na criação, não enviar 'status' (backend define como TODO/A fazer por padrão)
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { status: _omit, ...createInput } = input;
             const res = await fetch(`/api/tasks`, {
                 method: "POST",
                 headers: { "content-type": "application/json", authorization: `Bearer ${token}` },
-                body: JSON.stringify({ ...input, teamId }),
+                body: JSON.stringify({ ...createInput, teamId }),
             });
             const text = await res.text();
             let data: unknown = null; try { data = text ? JSON.parse(text) : null; } catch { data = null; }
@@ -87,16 +90,16 @@ export default function TeamPage() {
         setTasks(list || []);
         setModalOpen(false);
         } catch (e) {
-        alert((e as Error).message);
+            alert((e as Error).message);
         }
     }
 
     const grouped = useMemo(() => {
         return {
-        TODO: tasks.filter(t => t.status === "TODO"),
-        IN_PROGRESS: tasks.filter(t => t.status === "IN_PROGRESS"),
-        DONE: tasks.filter(t => t.status === "DONE"),
-        LATE: tasks.filter(t => t.status === "LATE"),
+            TODO: tasks.filter(t => t.status === "TODO"),
+            IN_PROGRESS: tasks.filter(t => t.status === "IN_PROGRESS"),
+            DONE: tasks.filter(t => t.status === "DONE"),
+            LATE: tasks.filter(t => t.status === "LATE"),
         };
     }, [tasks]);
 
@@ -180,31 +183,95 @@ export default function TeamPage() {
                 )}
 
                 {view === "table" && (
-                    <div className="overflow-auto bg-white border border-gray-200 rounded-lg">
-                    <table className="min-w-full text-sm">
-                        <thead>
-                        <tr className="bg-gray-50 text-left">
-                            <th className="px-3 py-2">Título</th>
-                            <th className="px-3 py-2">Status</th>
-                            <th className="px-3 py-2">Prioridade</th>
-                            <th className="px-3 py-2">Início</th>
-                            <th className="px-3 py-2">Entrega</th>
-                            <th className="px-3 py-2"></th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {tasks.map(t => (
-                            <tr key={t.id} className="border-t">
-                            <td className="px-3 py-2">{t.title}</td>
-                            <td className="px-3 py-2">{t.status}</td>
-                            <td className="px-3 py-2">{t.priority}</td>
-                            <td className="px-3 py-2">{t.startDate ? new Date(t.startDate).toLocaleDateString() : '-'}</td>
-                            <td className="px-3 py-2">{t.dueDate ? new Date(t.dueDate).toLocaleDateString() : '-'}</td>
-                            <td className="px-3 py-2 text-right"><button onClick={() => openEditModal(t)} className="text-gray-700 hover:underline">Editar</button></td>
+                    <div className="overflow-x-auto bg-white shadow-sm border border-gray-200 rounded-xl">
+                        <table className="min-w-full text-sm text-gray-800">
+                            <thead className="sticky top-0 bg-gray-100 text-xs uppercase tracking-wide border-b">
+                            <tr>
+                                <th className="px-4 py-3 text-left">Título</th>
+                                <th className="px-3 py-2 text-left">Status</th>
+                                <th className="px-3 py-2 text-left">Prioridade</th>
+                                <th className="px-3 py-2 text-left">Início</th>
+                                <th className="px-3 py-2 text-left">Entrega</th>
+                                <th className="px-3 py-2 text-right"></th>
                             </tr>
-                        ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                            {tasks.map(t => (
+                                <tr key={t.id} className="border-b last:border-none hover:bg-gray-50 transition-colors">
+                                {/* Título */}
+                                <td className="px-4 py-3 font-medium text-gray-900">{t.title}</td>
+
+                                {/* Status com cores */}
+                                <td className="px-4 py-3">
+                                <span
+                                    className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold
+                                    ${
+                                        t.status === "TODO"
+                                        ? "bg-gray-200 text-gray-700"
+                                        : t.status === "IN_PROGRESS"
+                                        ? "bg-blue-100 text-blue-700"
+                                        : t.status === "DONE"
+                                        ? "bg-green-100 text-green-700"
+                                        : "bg-red-100 text-red-700"
+                                    }`}
+                                >
+                                    {t.status === "TODO"
+                                    ? "A fazer"
+                                    : t.status === "IN_PROGRESS"
+                                    ? "Em andamento"
+                                    : t.status === "DONE"
+                                    ? "Concluída"
+                                    : "Atrasada"}
+                                </span>
+                                </td>
+
+                                {/* Prioridade com cores */}
+                                <td className="px-4 py-3">
+                                <span
+                                    className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold
+                                    ${
+                                        t.priority === "LOW"
+                                        ? "bg-gray-100 text-gray-700"
+                                        : t.priority === "MEDIUM"
+                                        ? "bg-yellow-100 text-yellow-700"
+                                        : t.priority === "HIGH"
+                                        ? "bg-orange-100 text-orange-700"
+                                        : "bg-red-100 text-red-700"
+                                    }`}
+                                >
+                                    {t.priority === "LOW"
+                                    ? "Baixa"
+                                    : t.priority === "MEDIUM"
+                                    ? "Média"
+                                    : t.priority === "HIGH"
+                                    ? "Alta"
+                                    : "Crítica"}
+                                </span>
+                                </td>
+
+                                {/* Datas */}
+                                <td className="px-4 py-3 text-gray-600">
+                                {t.startDate
+                                    ? new Date(t.startDate).toLocaleDateString()
+                                    : "-"}
+                                </td>
+                                <td className="px-4 py-3 text-gray-600">
+                                {t.dueDate ? new Date(t.dueDate).toLocaleDateString() : "-"}
+                                </td>
+
+                                {/* Ações */}
+                                <td className="px-4 py-3 text-right">
+                                <button
+                                    onClick={() => openEditModal(t)}
+                                    className="text-sm text-gray-700 hover:text-gray-900 hover:underline"
+                                >
+                                    Editar
+                                </button>
+                                </td>
+                                </tr>
+                            ))}
+                            </tbody>
+                        </table>
                     </div>
                 )}
                 </div>
@@ -256,15 +323,17 @@ function TaskModal({ task, onClose, onSave }: { task: Task | null; onClose: () =
                     <option value="CRITICAL">Crítica</option>
                 </select>
                 </div>
-                <div>
-                <label className="block text-xs text-gray-600">Status</label>
-                <select className="w-full border rounded px-2 py-2" value={status} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setStatus(e.target.value as Task["status"])}>
-                    <option value="TODO">A fazer</option>
-                    <option value="IN_PROGRESS">Em andamento</option>
-                    <option value="DONE">Concluída</option>
-                    <option value="LATE">Atrasada</option>
-                </select>
-                </div>
+                                {task && (
+                                    <div>
+                                        <label className="block text-xs text-gray-600">Status</label>
+                                        <select className="w-full border rounded px-2 py-2" value={status} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setStatus(e.target.value as Task["status"])}>
+                                                <option value="TODO">A fazer</option>
+                                                <option value="IN_PROGRESS">Em andamento</option>
+                                                <option value="DONE">Concluída</option>
+                                                <option value="LATE">Atrasada</option>
+                                        </select>
+                                    </div>
+                                )}
             </div>
             <div className="grid grid-cols-2 gap-2">
                 <div>
