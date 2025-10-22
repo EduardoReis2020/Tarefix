@@ -45,8 +45,8 @@ const WorkspacePage = () => {
                                 </aside>
 
                                 {/* Conteúdo principal */}
-                                <main className="flex-1 p-6">
-                                        <h1 className="text-2xl font-semibold text-gray-900 mb-4">Times</h1>
+                                <main className="flex-1 p-6 space-y-4">
+                                        <h1 className="text-2xl font-semibold text-gray-900">Times</h1>
                                         {loading && <p className="text-gray-600">Carregando times...</p>}
                                         {error && <p className="text-red-600">{error}</p>}
                                         {!loading && !error && (
@@ -54,11 +54,12 @@ const WorkspacePage = () => {
                                                         <>
                                                             <ul className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                                                                     {teams.map(team => (
-                                                                            <li key={team.id} className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-sm">
-                                                                                    <h3 className="text-lg font-medium text-gray-900">{team.name}</h3>
+                                                                            <li key={team.id} className="bg-white border border-gray-200 rounded-2xl p-5 hover:shadow-md transition-shadow">
+                                                                                    <h3 className="text-lg font-semibold text-gray-900">{team.name}</h3>
                                                                                     {team.description && <p className="text-sm text-gray-600 mt-1">{team.description}</p>}
-                                                                                    <Link href={`/teams/${team.id}`} className="text-sm text-gray-700 mt-3 inline-flex items-center hover:underline">
-                                                                                            Abrir equipe →
+                                                                                    <Link href={`/teams/${team.id}`} className="text-sm text-gray-700 mt-3 inline-flex items-center gap-1 hover:text-gray-900">
+                                                                                        <span>Abrir equipe</span>
+                                                                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path d="M3 10a1 1 0 0 1 1-1h9.586l-3.293-3.293a1 1 0 1 1 1.414-1.414l5 5a1 1 0 0 1 0 1.414l-5 5a1 1 0 0 1-1.414-1.414L13.586 11H4a1 1 0 0 1-1-1Z"/></svg>
                                                                                     </Link>
                                                                             </li>
                                                                     ))}
@@ -114,31 +115,31 @@ function CreateTeamButton() {
     }
 
     return (
-        <div className="mt-4">
-            <button onClick={() => setOpen(true)} className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800">
+                <div className="mt-4">
+                        <button onClick={() => setOpen(true)} className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800">
                 Criar equipe
             </button>
             {open && (
-                <div className="mt-4 text-left">
-                    <div className="space-y-2">
+                                <div className="mt-4 text-left bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
+                                        <div className="space-y-3">
                         <input
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             placeholder="Nome da equipe"
-                            className="w-full rounded-lg border border-gray-200 px-3 py-2"
+                                                        className="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-300"
                         />
                         <input
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                             placeholder="Descrição (opcional)"
-                            className="w-full rounded-lg border border-gray-200 px-3 py-2"
+                                                        className="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-300"
                         />
                         {error && <p className="text-sm text-red-600">{error}</p>}
-                        <div className="flex gap-2">
-                            <button onClick={createTeam} disabled={loading} className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 disabled:opacity-70">
+                                                <div className="flex gap-2 justify-end">
+                                                        <button onClick={createTeam} disabled={loading} className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 disabled:opacity-70">
                                 {loading ? 'Criando...' : 'Criar'}
                             </button>
-                            <button onClick={() => setOpen(false)} className="px-4 py-2 border rounded-lg">Cancelar</button>
+                                                        <button onClick={() => setOpen(false)} className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50">Cancelar</button>
                         </div>
                     </div>
                 </div>
