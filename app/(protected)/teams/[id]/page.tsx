@@ -32,6 +32,11 @@ export default function TeamPage() {
     const [modalOpen, setModalOpen] = useState(false);
     const [editingTask, setEditingTask] = useState<Task | null>(null);
     const [dragOverId, setDragOverId] = useState<string | null>(null);
+    // Calendário: mês corrente como primeiro dia do mês em UTC
+    const [monthCursor, setMonthCursor] = useState<Date>(() => {
+        const now = new Date();
+        return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+    });
 
     useEffect(() => {
         const token = localStorage.getItem("token");
@@ -196,7 +201,7 @@ export default function TeamPage() {
             <aside className="w-64 bg-white border-r border-gray-200 p-4">
             <nav className="space-y-2">
                 <Link href="/dashboard" className="block px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700">Dashboard</Link>
-                <Link href="/workspace" className="block px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700">Workspace</Link>
+                <Link href="/workspace" className="block px-3 py-2 rounded-lg bg-gray-900 text-white">Equipes</Link>
             </nav>
             </aside>
 
@@ -345,18 +350,13 @@ export default function TeamPage() {
                 )}
 
                 {view === "calendar" && (
-                    <div className="bg-white border border-gray-200 rounded-lg p-4">
-                    <p className="text-sm text-gray-600">Calendário simples (visual):
-                        mostra tarefas com dueDate. Para produção, integrar biblioteca de calendário.</p>
-                    <ul className="mt-2 space-y-1">
-                        {tasks.filter(t => !!t.dueDate).map(t => (
-                        <li key={t.id} className="flex justify-between">
-                            <span>{t.title}</span>
-                            <span className="text-gray-500 text-sm">{formatDate(t.dueDate!)}</span>
-                        </li>
-                        ))}
-                    </ul>
-                    </div>
+                    <TeamCalendar
+                        monthCursor={monthCursor}
+                        setMonthCursor={setMonthCursor}
+                        tasks={tasks}
+                        onTaskClick={openEditModal}
+                        onDayDoubleClick={() => openCreateModal()}
+                    />
                 )}
 
                 {view === "table" && (
@@ -537,6 +537,133 @@ function TaskModal({ task, onClose, onSave }: { task: Task | null; onClose: () =
             <button onClick={() => onSave({ title, description, priority, startDate, dueDate, status })} className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800">Salvar</button>
             </div>
         </div>
+        </div>
+    );
+}
+
+type TeamCalendarProps = {
+    monthCursor: Date;
+    setMonthCursor: (d: Date) => void;
+    tasks: Task[];
+    onTaskClick: (t: Task) => void;
+    onDayDoubleClick?: (d: Date) => void;
+};
+
+function TeamCalendar({ monthCursor, setMonthCursor, tasks, onTaskClick, onDayDoubleClick }: TeamCalendarProps) {
+    // Helpers UTC
+    const isSameUTCDay = (a: Date, b: Date) => (
+        a.getUTCFullYear() === b.getUTCFullYear() && a.getUTCMonth() === b.getUTCMonth() && a.getUTCDate() === b.getUTCDate()
+    );
+    const startOfWeekUTC = (d: Date) => {
+        const x = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+        const day = x.getUTCDay(); // 0..6 Domingo..Sábado
+        const diff = (day + 6) % 7; // começar na segunda
+        x.setUTCDate(x.getUTCDate() - diff);
+        return x;
+    };
+    const addMonthsUTC = (d: Date, delta: number) => new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + delta, 1));
+
+    const firstOfMonth = new Date(Date.UTC(monthCursor.getUTCFullYear(), monthCursor.getUTCMonth(), 1));
+    const startGrid = startOfWeekUTC(firstOfMonth);
+    const cells: Array<{ date: Date; inMonth: boolean; isToday: boolean; items: Task[] }> = [];
+    const todayLocal = new Date();
+    const todayLocalAsUTC = new Date(Date.UTC(todayLocal.getFullYear(), todayLocal.getMonth(), todayLocal.getDate()));
+    for (let i = 0; i < 42; i++) {
+        const d = new Date(Date.UTC(startGrid.getUTCFullYear(), startGrid.getUTCMonth(), startGrid.getUTCDate() + i));
+        const inMonth = d.getUTCMonth() === firstOfMonth.getUTCMonth();
+        // Hoje baseado no dia local do usuário
+        const isToday = isSameUTCDay(d, todayLocalAsUTC);
+        const items = tasks.filter(t => t.dueDate && isSameUTCDay(new Date(t.dueDate), d));
+        cells.push({ date: d, inMonth, isToday, items });
+    }
+
+    const monthLabel = firstOfMonth.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+
+    const statusClasses = (s: Task["status"]) => (
+        s === "TODO" ? "bg-gray-100 text-gray-700 border-gray-200" :
+        s === "IN_PROGRESS" ? "bg-blue-50 text-blue-700 border-blue-200" :
+        s === "DONE" ? "bg-green-50 text-green-700 border-green-200" :
+        "bg-red-50 text-red-700 border-red-200"
+    );
+
+    // Expansão de dia para mostrar todas as tarefas
+    const [expandedKey, setExpandedKey] = useState<string | null>(null);
+    const keyFromDate = (d: Date) => `${d.getUTCFullYear()}-${d.getUTCMonth()}-${d.getUTCDate()}`;
+
+    return (
+        <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => setMonthCursor(addMonthsUTC(monthCursor, -1))}
+                        className="inline-flex items-center justify-center w-8 h-8 rounded-md border border-gray-200 text-gray-700 hover:bg-gray-50"
+                        title="Mês anterior"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M12.78 15.53a.75.75 0 0 1-1.06 0l-4.5-4.5a.75.75 0 0 1 0-1.06l4.5-4.5a.75.75 0 1 1 1.06 1.06L8.81 10l3.97 3.97a.75.75 0 0 1 0 1.06Z" clipRule="evenodd"/></svg>
+                    </button>
+                    <button
+                        onClick={() => setMonthCursor(new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), 1)))}
+                        className="px-3 h-8 rounded-md border border-gray-200 text-gray-700 hover:bg-gray-50"
+                    >Hoje</button>
+                    <button
+                        onClick={() => setMonthCursor(addMonthsUTC(monthCursor, 1))}
+                        className="inline-flex items-center justify-center w-8 h-8 rounded-md border border-gray-200 text-gray-700 hover:bg-gray-50"
+                        title="Próximo mês"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M7.22 4.47a.75.75 0 0 1 1.06 0l4.5 4.5a.75.75 0 0 1 0 1.06l-4.5 4.5a.75.75 0 1 1-1.06-1.06L11.19 10 7.22 6.03a.75.75 0 0 1 0-1.06Z" clipRule="evenodd"/></svg>
+                    </button>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 capitalize">{monthLabel}</h3>
+                <div className="w-8" />
+            </div>
+            <div className="grid grid-cols-7 gap-1 text-xs text-gray-600 mb-2">
+                {["S","T","Q","Q","S","S","D"].map((d,i) => (
+                    <div key={i} className="text-center py-1">{d}</div>
+                ))}
+            </div>
+            <div className="grid grid-cols-7 gap-2">
+                {cells.map((c, idx) => {
+                    const k = keyFromDate(c.date);
+                    const isExpanded = expandedKey === k;
+                    const visibleItems = isExpanded ? c.items : c.items.slice(0,3);
+                    return (
+                        <div
+                            key={idx}
+                            onDoubleClick={() => onDayDoubleClick?.(c.date)}
+                            onClick={() => {
+                                if (c.items.length > 3) setExpandedKey(isExpanded ? null : k);
+                            }}
+                            className={`rounded-xl border p-2 ${isExpanded ? 'min-h-[140px]' : 'min-h-[110px]'} bg-white flex flex-col ${c.inMonth ? 'border-gray-200' : 'border-transparent opacity-60'}`}
+                        >
+                            <div className="flex items-center justify-between">
+                                <span className={`text-xs ${c.inMonth ? 'text-gray-800' : 'text-gray-400'}`}>{c.date.getUTCDate()}</span>
+                                {c.isToday && <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] bg-gray-900 text-white">Hoje</span>}
+                            </div>
+                            <div className="mt-1 space-y-1">
+                                {visibleItems.map(t => (
+                                    <button
+                                        key={t.id}
+                                        onClick={(e) => { e.stopPropagation(); onTaskClick(t); }}
+                                        className={`w-full text-left truncate border rounded-md px-2 py-1 text-[11px] ${statusClasses(t.status)}`}
+                                        title={t.title}
+                                    >
+                                        {t.title}
+                                    </button>
+                                ))}
+                                {c.items.length > 3 && !isExpanded && (
+                                    <span className="text-[11px] text-gray-600">+{c.items.length - 3} tarefas</span>
+                                )}
+                                {c.items.length > 3 && isExpanded && (
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); setExpandedKey(null); }}
+                                        className="text-[11px] text-gray-600 underline"
+                                    >Mostrar menos</button>
+                                )}
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
         </div>
     );
 }
