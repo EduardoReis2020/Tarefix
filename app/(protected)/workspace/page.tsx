@@ -40,14 +40,14 @@ const WorkspacePage = () => {
                                 <aside className="w-64 bg-white border-r border-gray-200 p-4">
                                         <nav className="space-y-2">
                                                 <Link href="/dashboard" className={`block px-3 py-2 rounded-lg ${isDashboard ? 'bg-gray-900 text-white' : 'hover:bg-gray-100 text-gray-700'}`}>Dashboard</Link>
-                                                <Link href="/workspace" className={`block px-3 py-2 rounded-lg ${isWorkspace ? 'bg-gray-900 text-white' : 'hover:bg-gray-100 text-gray-700'}`}>Workspace</Link>
+                                                <Link href="/workspace" className={`block px-3 py-2 rounded-lg ${isWorkspace ? 'bg-gray-900 text-white' : 'hover:bg-gray-100 text-gray-700'}`}>Equipes</Link>
                                         </nav>
                                 </aside>
 
                                 {/* Conteúdo principal */}
                                 <main className="flex-1 p-6 space-y-4">
-                                        <h1 className="text-2xl font-semibold text-gray-900">Times</h1>
-                                        {loading && <p className="text-gray-600">Carregando times...</p>}
+                                        <h1 className="text-2xl font-semibold text-gray-900">Equipes</h1>
+                                        {loading && <p className="text-gray-600">Carregando equipes...</p>}
                                         {error && <p className="text-red-600">{error}</p>}
                                         {!loading && !error && (
                                                 teams.length > 0 ? (
