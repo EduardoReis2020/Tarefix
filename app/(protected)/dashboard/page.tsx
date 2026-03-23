@@ -2,8 +2,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import Header from "@/componentes/Header/Header";
-import Footer from "@/componentes/Footer/Footer";
+import Header from "@/components/Header/Header";
+import Footer from "@/components/Footer/Footer";
 
 type Task = {
     id: string;

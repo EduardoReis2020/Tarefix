@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import Header from "@/componentes/Header/Header";
+import Header from "@/components/Header/Header";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 

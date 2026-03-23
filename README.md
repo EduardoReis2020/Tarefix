@@ -45,7 +45,7 @@ app/
 ├── login/                # Tela de login
 ├── register/             # Tela de registro
 └── ...
-componentes/              # Componentes React reutilizáveis (Header, Footer, etc.)
+components/               # Componentes React reutilizáveis (Header, Footer, etc.)
 lib/                      # Utilitários (ex.: helper JWT)
 prisma/                   # Schema e migrações
 scripts/                  # Scripts auxiliares (ex.: test-flow.js)

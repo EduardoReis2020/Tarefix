@@ -3,8 +3,8 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
-import Header from "@/componentes/Header/Header";
-import Footer from "@/componentes/Footer/Footer";
+import Header from "@/components/Header/Header";
+import Footer from "@/components/Footer/Footer";
 
 export default function RegisterPage() {
 	const router = useRouter();

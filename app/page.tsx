@@ -1,8 +1,8 @@
 "use client";
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
-import Header from '../componentes/Header/Header'
-import Footer from '../componentes/Footer/Footer'
+import Header from '../components/Header/Header'
+import Footer from '../components/Footer/Footer'
 import { useRouter } from 'next/navigation'
 
 const HomePage = () => {
